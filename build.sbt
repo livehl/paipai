@@ -32,10 +32,10 @@ doc in Compile <<= target.map(_ / "none")
 
 dockerBaseImage := "anapsix/alpine-java:jre8"
 
-dockerCommands :=dockerCommands.value.take(3) ++ Seq(
+dockerCommands :=dockerCommands.value.take(2) ++ Seq(
   ExecCmd("RUN","ln", "-sf","/usr/share/zoneinfo/Asia/Shanghai", "/etc/localtime"),
   ExecCmd("RUN","echo","\\\"Asia/Shanghai\\\"",">","/etc/timezone")
-)++ dockerCommands.value.drop(3)
+)++ dockerCommands.value.drop(2)
 
 packageName in Docker := packageName.value
 
