@@ -3,7 +3,7 @@ import NativePackagerHelper._
 
 name := "paipai"
 
-version := "1.0.2"
+version := "1.0.3"
 
 scalaVersion := "2.11.7"
 
@@ -17,6 +17,7 @@ libraryDependencies ++= Seq(
   "org.javassist" % "javassist" % "3.17.1-GA",
   "commons-dbcp" % "commons-dbcp" % "1.4",
   "javax.mail" % "mail" % "1.4.7",
+  "org.jsoup" % "jsoup" % "1.8.3",
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.3",
   "net.jpountz.lz4" % "lz4" % "1.3.0",
   "com.typesafe" % "config" % "1.3.0",

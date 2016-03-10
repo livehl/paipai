@@ -187,6 +187,8 @@ class Loan(val id:Int=0,
            val Months:Int=0,
            @(ApiModelProperty @field)(value = "利率", required = true)
            val Rate:Double=0,
+           @(ApiModelProperty @field)(value = "扩展数据", required = false,hidden = true)
+           val ext:String="",
            @(ApiModelProperty @field)(value = "创建日期", required = false,hidden = true)
            val createTime:Date=new Date(),
            @(ApiModelProperty @field)(value = "最后更新日期", required = false,hidden = true)
