@@ -3,7 +3,7 @@ import NativePackagerHelper._
 
 name := "paipai"
 
-version := "1.0.3"
+version := "1.0.5"
 
 scalaVersion := "2.11.7"
 
@@ -31,12 +31,7 @@ val root = (project in file(".")).enablePlugins(DockerPlugin).enablePlugins(Java
 
 doc in Compile <<= target.map(_ / "none")
 
-dockerBaseImage := "anapsix/alpine-java:jre8"
-
-dockerCommands :=dockerCommands.value.take(2) ++ Seq(
-  ExecCmd("RUN","ln", "-sf","/usr/share/zoneinfo/Asia/Shanghai", "/etc/localtime"),
-  ExecCmd("RUN","echo","\\\"Asia/Shanghai\\\"",">","/etc/timezone")
-)++ dockerCommands.value.drop(2)
+dockerBaseImage := "livehl/java8"
 
 packageName in Docker := packageName.value
 
