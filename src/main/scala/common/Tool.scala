@@ -28,7 +28,7 @@ object Tool {
 
   private val chars: Array[Char] = "0123456789ABCDEF".toCharArray
   private val settingObjectCache = new util.Hashtable[String, AnyRef]()
-  private val AES_DEFAULT_KEY = "#$%^Setgd4g$%^"
+  private val AES_DEFAULT_KEY = "#$#$#^T#$45rw3d4g$%^"
   private val map = new ObjectMapper() with ScalaObjectMapper
   map.registerModule(DefaultScalaModule)
   map.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
@@ -239,6 +239,14 @@ object Tool {
 
 
   implicit class StringAddMethod[A <: String](bean: A) {
+
+    def encrypt(): String = {
+      AESCoder.encrypt(bean, AES_DEFAULT_KEY)
+    }
+
+    def decrypt(): String = {
+      AESCoder.decrypt(bean, AES_DEFAULT_KEY)
+    }
 
     def md5(): String = Tool.md5(bean)
 

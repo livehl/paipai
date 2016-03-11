@@ -143,21 +143,15 @@ class AdminModifyLog(val id: String=uuid, val aid: Int=0,val adminName:String=""
   *
   */
 @ApiModel(value = "User",description = "用户基础属性")
-class User(val id: String = uuid,
-           @(ApiModelProperty @field)(value = "用户唯一标识", required = true)
-           val userNo:Int=0,
+class User(val id: Int = 0,
            @(ApiModelProperty @field)(value = "名字", required = true)
            val name: String = "",
-           @(ApiModelProperty @field)(value = "头像", required = false)
-           val icon:String="",
            @(ApiModelProperty @field)(value = "手机号", required = false)
            val phone: String = "",
            @(ApiModelProperty @field)(value = "邮箱", required = false)
            val email:String="",
            @(ApiModelProperty @field)(value = "密码", required = true)
            val pwd:String="",
-           @(ApiModelProperty @field)(value = "消费总额", required = false)
-           val consumption:Int=0,
            @(ApiModelProperty @field)(value = "等级", required = false)
            val level:Int=0,
            @(ApiModelProperty @field)(value = "状态(0=正常,1=未启用,2=封禁)", required = false)
@@ -166,8 +160,16 @@ class User(val id: String = uuid,
            val ext: String = "",
            @(ApiModelProperty @field)(value = "创建时间(前端请忽略)", required = false,hidden = true)
            val createTime: Date = new Date(System.currentTimeMillis())) extends BaseDBEntity[User]("User")
-@ApiModel(value = "UserSetting",description = "用户设置，json对象")
-class UserSetting(val id:String="",val setting:String="") extends BaseDBEntity[UserSetting]("UserSetting")
+
+@ApiModel(value = "UserAccount",description = "用户账号")
+class UserAccount(val id:Int=0,val uid:Int=0,
+                  @(ApiModelProperty @field)(value = "平台(ppd)", required = true)
+                  val platform:String="",
+                  @(ApiModelProperty @field)(value = "用户名", required = true)
+                  val userName:String="",
+                  @(ApiModelProperty @field)(value = "密码", required = true)
+                  val passWord:String="",
+                  val createTime: Date = new Date(System.currentTimeMillis())) extends BaseDBEntity[UserAccount]("UserAccount")
 
 @ApiModel(value = "Loan",description = "借款信息")
 class Loan(val id:Int=0,

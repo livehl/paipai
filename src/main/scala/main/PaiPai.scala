@@ -17,6 +17,7 @@ object PaiPai {
   lazy val conf = ConfigFactory.load()
 
   def main(args: Array[String]) {
+
     val collect=conf.getObjectList("paipai.task").asScala.map(v=> (v.get("time").render().toInt , v.get("page").render().toInt,v.get("action").render())).toList
     println(collect)
     while (true){
@@ -66,6 +67,14 @@ object PaiPai {
       val funding=jsoup.select(".earningsLine").text().dropRight(1)
     val info=jsoup.select(".userInfo p").html()
     new Loan(ListingId = id,Funding = funding.toInt,ext=info).update("ListingId","Funding","ext")
+  }
+
+  def login(user:String,pwd:String)={
+      val (c1,_)=NetTool.HttpGet("http://m.ppdai.com/lend/Home/Index")
+    val (c2,_)=NetTool.HttpGet("https://ac.ppdai.com/User/Login?Redirect=http://m.ppdai.com/lend/User/UserProfitCenter",c1)
+    val (c3,d)=NetTool.HttpPost("https://ac.ppdai.com/User/Login",c2,Map("IsAsync"->"true","UserName"->user,"Password"->pwd,"Redirect"->"http://m.ppdai.com/lend/User/UserProfitCenter"))
+    println(d)
+    c3
   }
 
 
