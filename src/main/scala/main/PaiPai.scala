@@ -68,9 +68,9 @@ object PaiPai {
   def checkLoans(){
       val size=DBEntity.count(s"select count(*) from ${new Loan().tableName} where Funding < 100")
       println(size)
-      1 to (size/100+1) mutile(2) foreach { page =>
-        val ads = new Loan().queryPage("", page, 100, "")._2
-        ads.foreach { v =>
+      1 to (size/100+1) foreach { page =>
+        val ads = new Loan().queryPage("", 1, 100, "")._2
+        ads.mutile(3).foreach { v =>
           checkLoan(v.ListingId)
         }
         println(page)
