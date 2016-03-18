@@ -17,7 +17,6 @@ object PaiPai {
   lazy val conf = ConfigFactory.load()
 
   def main(args: Array[String]) {
-
     val collect=conf.getObjectList("paipai.task").asScala.map(v=> (v.get("time").render().toInt , v.get("page").render().toInt,v.get("action").render())).toList
     println(collect)
     while (true){
@@ -37,6 +36,12 @@ object PaiPai {
 
 
   }
+
+  /**
+    * 抓取标的
+    *
+    * @param page
+    */
   def catchPage(page:Int){
     1 to page foreach{i=>
       val (cookie,str)=NetTool.HttpPost("http://m.ppdai.com/lend/listing/ajaxindex",null,Map("pageIndex"->i.toString))
@@ -57,10 +62,26 @@ object PaiPai {
     println(new Date().sdatetime +"page end")
   }
 
+  /**
+    * 检查所有未完成的标的状态
+    */
   def checkLoans(){
-      new Loan().query("Funding < 100").mutile(2).foreach(v=>checkLoan(v.ListingId))
+      val size=DBEntity.count(s"select count(*) from ${new Loan().tableName} where Funding < 100")
+      println(size)
+      1 to (size/100+1) mutile(2) foreach { page =>
+        val ads = new Loan().queryPage("", page, 100, "")._2
+        ads.foreach { v =>
+          checkLoan(v.ListingId)
+        }
+        println(page)
+      }
   }
 
+  /**
+    * 检查标的是否完成
+    *
+    * @param id
+    */
   def checkLoan(id:Int){
       val data=NetTool.HttpGet("http://m.ppdai.com/lend/"+id)._2
       val jsoup=Jsoup.parse(data)
@@ -69,6 +90,13 @@ object PaiPai {
     new Loan(ListingId = id,Funding = funding.toInt,ext=info).update("ListingId","Funding","ext")
   }
 
+  /**
+    * 用户登陆
+    *
+    * @param user
+    * @param pwd
+    * @return
+    */
   def login(user:String,pwd:String)={
       val (c1,_)=NetTool.HttpGet("http://m.ppdai.com/lend/Home/Index")
     val (c2,_)=NetTool.HttpGet("https://ac.ppdai.com/User/Login?Redirect=http://m.ppdai.com/lend/User/UserProfitCenter",c1)

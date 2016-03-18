@@ -379,6 +379,9 @@ object DBEntity {
       new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date)
     }
   }
+  def count(sql:String,params:String*)={
+    DBTool.count(sql,params:_*)
+  }
 }
 
 private object DBTool {
