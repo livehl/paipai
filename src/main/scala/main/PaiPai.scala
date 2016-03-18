@@ -9,6 +9,7 @@ import tools._
 import common._
 import common.Tool._
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 /**
   * Created by isaac on 16/3/9.
@@ -68,12 +69,17 @@ object PaiPai {
   def checkLoans(){
       val size=DBEntity.count(s"select count(*) from ${new Loan().tableName} where Funding < 100")
       println(size)
+      val hashSet=new mutable.HashSet[String]()
       1 to (size/100+1) foreach { page =>
-        val ads = new Loan().queryPage("", 1, 100, "")._2
+        val num=if(hashSet.size==0) 1 else (hashSet.size/100+1)
+        val ads = new Loan().queryPage("Funding < 100",num, 100, "lastUpdate asc")._2
         ads.mutile(3).foreach { v =>
-          checkLoan(v.ListingId)
+          if(!hashSet.contains(v.ListingId)){
+            checkLoan(v.ListingId)
+            hashSet.add(v.ListingId)
+          }
         }
-        println(page)
+        println(num)
       }
   }
 
@@ -87,7 +93,7 @@ object PaiPai {
       val jsoup=Jsoup.parse(data)
       val funding=jsoup.select(".earningsLine").text().dropRight(1)
     val info=jsoup.select(".userInfo p").html()
-    new Loan(ListingId = id,Funding = funding.toInt,ext=info).update("ListingId","Funding","ext")
+    new Loan(ListingId = id,Funding = funding.toInt,ext=info,lastUpdate = new Date()).update("ListingId","Funding","ext","lastUpdate")
   }
 
   /**
