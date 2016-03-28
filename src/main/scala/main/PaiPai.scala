@@ -18,10 +18,20 @@ object PaiPai {
   lazy val conf = ConfigFactory.load()
 
   def main(args: Array[String]) {
+
+    val cookie=login("livehl@126.com","890218")
+    println(cookie)
+
+//    collectLoan
+
+
+  }
+
+  def collectLoan(){
     val collect=conf.getObjectList("paipai.task").asScala.map(v=> (v.get("time").render().toInt , v.get("page").render().toInt,v.get("action").render())).toList
     println(collect)
     while (true){
-    val i=System.currentTimeMillis()/1000
+      val i=System.currentTimeMillis()/1000
       collect.foreach{kv=>
         if(i% kv._1 ==0){
           kv._3 match{
@@ -33,9 +43,6 @@ object PaiPai {
       }
       Thread.sleep(1000)
     }
-
-
-
   }
 
   /**
