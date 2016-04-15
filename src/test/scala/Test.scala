@@ -13,7 +13,7 @@ object Test {
   def main(array: Array[String]): Unit = {
     //计算每个月投资固定金额,需要多久会变成一千万
     //年利率
-    val rate = 0.18d
+    val rate = 0.22d
     //起始资金
     val startMoney = 0d
     var money = startMoney

@@ -19,11 +19,10 @@ object PaiPai {
   lazy val conf = ConfigFactory.load()
 
   def main(args: Array[String]) {
-
-    val cookie=login("livehl@126.com","hl890218")
-    println(cookie)
-
-//    collectLoan
+//
+//    val cookie=login("livehl@126.com","hl890218")
+//    println(cookie)
+    collectLoan
 
 
   }
@@ -55,7 +54,7 @@ object PaiPai {
     1 to page foreach{i=>
       val (cookie,str)=NetTool.HttpPost("http://m.ppdai.com/lend/listing/ajaxindex",null,Map("pageIndex"->i.toString))
       val lists=toBean(str,classOf[List[Map[String,AnyRef]]]).map(v=> new Loan().fromJson(v.toJson))
-      lists.mutile(5).foreach{loan=>
+      lists.foreach{loan=>
         val dbLoan=loan.query("ListingId=?",loan.ListingId)
         if(dbLoan.isEmpty){
           loan.insert()
@@ -75,19 +74,13 @@ object PaiPai {
     * 检查所有未完成的标的状态
     */
   def checkLoans(){
-      val size=DBEntity.count(s"select count(*) from ${new Loan().tableName} where Funding < 100")
-      println(size)
-      val hashSet=new mutable.HashSet[String]()
-      1 to (size/100+1) foreach { page =>
-        val num=if(hashSet.size==0) 1 else (hashSet.size/100+1)
-        val ads = new Loan().queryPage("Funding < 100",num, 100, "lastUpdate asc")._2
-        ads.mutile(3).foreach { v =>
-          if(!hashSet.contains(v.ListingId)){
-            checkLoan(v.ListingId)
-            hashSet.add(v.ListingId)
-          }
+      val ids=DBEntity.queryMap(s"select ListingId from ${new Loan().tableName} where Funding < 100").map(_("ListingId").asInstanceOf[Int])
+      println(ids.size)
+    ids.grouped(100) foreach { page =>
+        println("new page")
+        page.foreach { v =>
+            checkLoan(v)
         }
-        println(num)
       }
   }
 
