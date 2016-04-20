@@ -3,7 +3,7 @@ import NativePackagerHelper._
 
 name := "paipai"
 
-version := "1.0.8"
+version := "1.0.9"
 
 scalaVersion := "2.11.7"
 
@@ -31,7 +31,12 @@ val root = (project in file(".")).enablePlugins(DockerPlugin).enablePlugins(Java
 
 doc in Compile <<= target.map(_ / "none")
 
-dockerBaseImage := "livehl/java8"
+dockerCommands :=Seq(
+  Cmd("FROM","livehl/java8"),
+  Cmd("WORKDIR","/opt/docker"),
+  ExecCmd("copy","opt/docker/", "/opt/docker/"),
+  ExecCmd("CMD","bin/paipai")
+)
 
 packageName in Docker := packageName.value
 
