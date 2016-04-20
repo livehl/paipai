@@ -28,7 +28,7 @@ object PaiPai {
   }
 
   def collectLoan(){
-    val collect=conf.getObjectList("paipai.task").asScala.map(v=> (v.get("time").render().toInt , v.get("page").render().toInt,v.get("action").render())).toList
+    val collect=conf.getObjectList("paipai.task").asScala.map(v=> (v.get("time").render().toInt , v.get("page").render().toInt,v.get("action").unwrapped())).toList
     println(collect)
     while (true){
       val i=System.currentTimeMillis()/1000
