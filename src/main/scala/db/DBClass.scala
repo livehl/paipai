@@ -110,33 +110,6 @@ import BaseDBEntity.uuid
 //系统参数
 class Setting(val id: Int = -1, val name: String = "", val value: String = "",val remark:String="") extends BaseDBEntity[Setting]("Setting")
 
-/**
-  *管理员定义
-  *Admin 是管理员  ，拥有组
-  * RoleGroup 是组 ，每个组有不同的权限,其中 *　是所有权限
-  *Role 是权限，限定每个操作
-  */
-
-//管理员表 定义
-@ApiModel(value = "Admin",description = "管理员")
-class Admin(val id: Int=0,
-            @(ApiModelProperty @field)(value = "账号", required = true)
-            val adminName: String="",
-            @(ApiModelProperty @field)(value = "密码", required = true)
-            val adminPassword: String="",
-            @(ApiModelProperty @field)(value = "是否启用", required = true)
-            val isEffect: Int=0, val roleId: Int=0,
-            @(ApiModelProperty @field)(value = "创建时间")
-            val createDate: Date=new Date) extends BaseDBEntity[Admin]("Admin")
-
-//权限
-class Role(val id: Int = -1, val path: String = "", val method: String = "", val name: String = "", val partten: String = "", val createDate: Date=new Date) extends BaseDBEntity[Role]("role")
-
-//权限分组
-class RoleGroup(val id: Int = -1, val name: String = "", val roles: String = "", val createDate: Date=new Date) extends BaseDBEntity[RoleGroup]("roleGroup")
-
-//操作日志
-class AdminModifyLog(val id: String=uuid, val aid: Int=0,val adminName:String="", val name: String="", val method: String="", val path: String="", val ip: String="", val createDate: Date=new Date) extends BaseDBEntity[AdminModifyLog]("AdminModifyLog")
 
 /**
   * 用户
@@ -162,13 +135,16 @@ class User(val id: Int = 0,
            val createTime: Date = new Date(System.currentTimeMillis())) extends BaseDBEntity[User]("User")
 
 @ApiModel(value = "UserAccount",description = "用户账号")
-class UserAccount(val id:Int=0,val uid:Int=0,
+class UserAccount(val id:Int=0,
+                  @(ApiModelProperty @field)(value = "用户", required = true,reference = "User")
+                  val uid:Int=0,
                   @(ApiModelProperty @field)(value = "平台(ppd)", required = true)
                   val platform:String="",
                   @(ApiModelProperty @field)(value = "用户名", required = true)
                   val userName:String="",
                   @(ApiModelProperty @field)(value = "密码", required = true)
                   val passWord:String="",
+                  @(ApiModelProperty @field)(value = "创建时间", required = true)
                   val createTime: Date = new Date(System.currentTimeMillis())) extends BaseDBEntity[UserAccount]("UserAccount")
 
 @ApiModel(value = "Loan",description = "借款信息")
