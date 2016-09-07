@@ -22,8 +22,9 @@ object PaiPaiLoans {
 //
 //    val cookie=login("livehl@126.com","hl890218")
 //    println(cookie)
-    collectLoan
+//    collectLoan
 
+    catchPage(1)
 
   }
 
@@ -66,6 +67,7 @@ object PaiPaiLoans {
         return
       }
       println(new Date().sdatetime + "page:"+i)
+      Thread.sleep(5000)
     }
     println(new Date().sdatetime +"page end")
   }
@@ -80,6 +82,7 @@ object PaiPaiLoans {
         println("new page")
         page.foreach { v =>
             checkLoan(v)
+          Thread.sleep(1000)
         }
       }
   }
