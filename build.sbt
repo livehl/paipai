@@ -31,12 +31,14 @@ val root = (project in file(".")).enablePlugins(DockerPlugin).enablePlugins(Java
 
 doc in Compile <<= target.map(_ / "none")
 
-dockerCommands :=Seq(
-  Cmd("FROM","livehl/java8"),
-  Cmd("WORKDIR","/opt/docker"),
-  ExecCmd("copy","opt/docker/", "/opt/docker/"),
-  ExecCmd("CMD","bin/paipai")
-)
+dockerBaseImage := "livehl/java8"
+
+//dockerCommands :=Seq(
+//  Cmd("FROM","livehl/java8"),
+//  Cmd("WORKDIR","/opt/docker"),
+//  ExecCmd("copy","opt/docker/", "/opt/docker/"),
+//  ExecCmd("CMD","bin/paipai")
+//)
 
 packageName in Docker := packageName.value
 
