@@ -52,7 +52,7 @@ object PaiPaiLoans {
     */
   def catchPage(page:Int){
     1 to page foreach{i=>
-      val (cookie,str)=NetTool.HttpPost("http://m.ppdai.com/lend/listing/ajaxindex",null,Map("pageIndex"->i.toString))
+      val (cookie,str)=NetTool.HttpPost("http://m.invest.ppdai.com/listing/ajaxindex",null,Map("pageIndex"->i.toString))
       val lists=toBean(str,classOf[List[Map[String,AnyRef]]]).map(v=> new Loan().fromJson(v.toJson))
       lists.foreach{loan=>
         val dbLoan=loan.query("ListingId=?",loan.ListingId)
@@ -93,8 +93,16 @@ object PaiPaiLoans {
       val data=NetTool.HttpGet("http://m.ppdai.com/lend/"+id)._2
       val jsoup=Jsoup.parse(data)
       val funding=jsoup.select(".earningsLine").text().dropRight(1)
-    val info=jsoup.select(".userInfo p").html()
+    val info=jsoup.select(".userInfo p").html() + jsoup.select(".verifyInfo p").html()
     new Loan(ListingId = id,Funding = funding.toInt,ext=info,lastUpdate = new Date()).update("ListingId","Funding","ext","lastUpdate")
+  }
+
+  def loanInfo(id:Int){
+    val data=NetTool.HttpGet("http://invest.ppdai.com/loan/info?id="+id)._2
+    val jsoup=Jsoup.parse(data)
+//    val funding=jsoup.select(".earningsLine").text().dropRight(1)
+//    val info=jsoup.select(".userInfo p").html() + jsoup.select(".verifyInfo p").html()
+//    new Loan(ListingId = id,Funding = funding.toInt,ext=info,lastUpdate = new Date()).update("ListingId","Funding","ext","lastUpdate")
   }
 
 }

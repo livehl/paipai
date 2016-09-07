@@ -172,3 +172,50 @@ class Loan(val id:Int=0,
            @(ApiModelProperty @field)(value = "最后更新日期", required = false,hidden = true)
            val lastUpdate:Date=null
           )extends BaseDBEntity[Loan]("Loan")
+
+@ApiModel(value = "LoanInfo",description = "借款详细信息")
+class LoanInfo(val id:Int=0,
+               @(ApiModelProperty @field)(value = "借款用户", required = true,reference = "LoanUser")
+               val uid:String="",
+               @(ApiModelProperty @field)(value = "标题", required = true)
+               val Title:String="",
+               @(ApiModelProperty @field)(value = "id", required = true)
+               val ListingId:Int=0,
+               @(ApiModelProperty @field)(value = "借款信息", required = true)
+               val info:String="",
+               @(ApiModelProperty @field)(value = "认证信息", required = true)
+               val very:String="",
+               @(ApiModelProperty @field)(value = "审核信息", required = true)
+               val audit:String="",
+               @(ApiModelProperty @field)(value = "统计信息", required = true)
+               val count:String="",
+               @(ApiModelProperty @field)(value = "扩展数据", required = false,hidden = true)
+               val ext:String="",
+               @(ApiModelProperty @field)(value = "创建日期", required = false,hidden = true)
+               val createTime:Date=new Date()
+              )extends BaseDBEntity[LoanInfo]("LoanInfo")
+
+@ApiModel(value = "LoanUser",description = "借款用户")
+class LoanUser(val id: String ="",
+           @(ApiModelProperty @field)(value = "名字", required = true)
+           val name: String = "",
+           @(ApiModelProperty @field)(value = "性别", required = false)
+           val sex: String = "",
+           @(ApiModelProperty @field)(value = "注册时间", required = false)
+           val regTime:String="",
+           @(ApiModelProperty @field)(value = "身份认证", required = true)
+           val idv:String="",
+           @(ApiModelProperty @field)(value = "视频认证", required = true)
+           val ivv:String="",
+           @(ApiModelProperty @field)(value = "学历认证", required = true)
+           val iev:String="",
+           @(ApiModelProperty @field)(value = "手机认证", required = true)
+           val ipv:String="",
+           @(ApiModelProperty @field)(value = "等级分", required = false)
+           val level:Int=0,
+           @(ApiModelProperty @field)(value = "状态(0=正常,1=未启用,2=封禁)", required = false)
+           val status: Int = 0,
+           @(ApiModelProperty @field)(value = "扩展数据,用来存一些莫名奇妙的数据", required = false,hidden = true)
+           val ext: String = "",
+           @(ApiModelProperty @field)(value = "创建时间(前端请忽略)", required = false,hidden = true)
+           val createTime: Date = new Date(System.currentTimeMillis())) extends BaseDBEntity[LoanUser]("LoanUser")

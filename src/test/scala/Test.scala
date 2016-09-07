@@ -8,6 +8,6 @@ object Test {
 
 
   def main(array: Array[String]): Unit = {
-    PaiPaiLoans.catchPage(1)
+    PaiPaiLoans.loanInfo(17725417)
   }
 }
