@@ -76,7 +76,7 @@ object PaiPaiLoans {
     * 检查所有未完成的标的状态
     */
   def checkLoans(){
-      val ids=DBEntity.queryMap(s"select ListingId from ${new Loan().tableName} where Funding < 100  and createTime >'"+("-1d".dateExp.sdate)+"'").map(_("ListingId").asInstanceOf[Int])
+      val ids=DBEntity.queryMap(s"select ListingId from ${new Loan().tableName} where Funding < 100  and Rate >= 20 and createTime >'"+("-1d".dateExp.sdate)+"'  order by Funding desc ").map(_("ListingId").asInstanceOf[Int])
       println(ids.size)
     ids.grouped(100) foreach { page =>
         println("new page")
