@@ -22,8 +22,8 @@ object PaiPaiLoans {
 //
 //    val cookie=login("livehl@126.com","hl890218")
 //    println(cookie)
-//    collectLoan
-    checkLoans
+    collectLoan
+//    checkLoans
 //    catchPage(1)
 
   }
