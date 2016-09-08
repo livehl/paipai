@@ -280,6 +280,8 @@ object Tool {
 
     def jsonToHashMap=Tool.toBean(bean,HashMap[String, Any]().getClass)
 
+    def dateExp=if (null == bean || bean.isEmpty) new Date() else TimeTool.getAfterDate(bean)
+
   }
 
   implicit class DateAddMethod[A <: Date](bean: A) {

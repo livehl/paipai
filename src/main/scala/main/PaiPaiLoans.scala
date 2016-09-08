@@ -22,8 +22,8 @@ object PaiPaiLoans {
 //
 //    val cookie=login("livehl@126.com","hl890218")
 //    println(cookie)
-    collectLoan
-
+//    collectLoan
+    checkLoans
 //    catchPage(1)
 
   }
@@ -76,7 +76,7 @@ object PaiPaiLoans {
     * 检查所有未完成的标的状态
     */
   def checkLoans(){
-      val ids=DBEntity.queryMap(s"select ListingId from ${new Loan().tableName} where Funding < 100").map(_("ListingId").asInstanceOf[Int])
+      val ids=DBEntity.queryMap(s"select ListingId from ${new Loan().tableName} where Funding < 100  and createTime >'"+("-1d".dateExp.sdate)+"'").map(_("ListingId").asInstanceOf[Int])
       println(ids.size)
     ids.grouped(100) foreach { page =>
         println("new page")
@@ -97,7 +97,7 @@ object PaiPaiLoans {
       val jsoup=Jsoup.parse(data)
       val funding=jsoup.select(".earningsLine").text().dropRight(1)
     val info=jsoup.select(".userInfo p").html() + jsoup.select(".verifyInfo p").html()
-    new Loan(ListingId = id,Funding = funding.toInt,ext=info,lastUpdate = new Date()).update("ListingId","Funding","ext","lastUpdate")
+    new Loan(ListingId = id,Funding = funding.toInt,text=data, ext=info,lastUpdate = new Date()).update("ListingId","Funding","ext","lastUpdate")
   }
 
   def loanInfo(id:Int){
