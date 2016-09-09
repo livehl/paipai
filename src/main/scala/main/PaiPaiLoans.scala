@@ -81,7 +81,7 @@ object PaiPaiLoans {
       println(ids.size)
     ids.grouped(100) foreach { page =>
         println("new page:"+page)
-        page.foreach { v =>
+        page.mutile(2).foreach { v =>
             checkLoan(v)
           Thread.sleep(500)
         }
