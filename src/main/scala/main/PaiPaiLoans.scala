@@ -22,14 +22,13 @@ object PaiPaiLoans {
 //
 //    val cookie=login("livehl@126.com","hl890218")
 //    println(cookie)
-    collectLoan
 //    checkLoans
 //    catchPage(1)
 
   }
 
   def collectLoan(){
-    val collect=conf.getObjectList("paipai.task").asScala.map(v=> (v.get("time").render().toInt , v.get("page").render().toInt,v.get("action").unwrapped())).toList
+    val collect=conf.getObjectList("paipai.loantask").asScala.map(v=> (v.get("time").render().toInt , v.get("page").render().toInt,v.get("action").unwrapped())).toList
     println(collect)
     while (true){
       val i=System.currentTimeMillis()/1000

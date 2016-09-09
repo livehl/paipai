@@ -144,6 +144,10 @@ class UserAccount(val id:Int=0,
                   val userName:String="",
                   @(ApiModelProperty @field)(value = "密码", required = true)
                   val passWord:String="",
+                  @(ApiModelProperty @field)(value = "账户余额", required = true)
+                  val money:BigDecimal=BigDecimal(0),
+                  @(ApiModelProperty @field)(value = "账户总额", required = true)
+                  val allMoney:BigDecimal=BigDecimal(0),
                   @(ApiModelProperty @field)(value = "创建时间", required = true)
                   val createTime: Date = new Date(System.currentTimeMillis())) extends BaseDBEntity[UserAccount]("UserAccount")
 

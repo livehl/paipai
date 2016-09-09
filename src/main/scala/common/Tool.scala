@@ -227,9 +227,7 @@ object Tool {
       value.get.asInstanceOf[T]
     } else {
       val v = f
-      run {
-        Cache.setCache(key, v, time)
-      }
+      Cache.setCache(key, v, time)
       v
     }
   }

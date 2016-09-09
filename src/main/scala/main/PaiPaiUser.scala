@@ -18,9 +18,26 @@ object PaiPaiUser {
   lazy val conf = ConfigFactory.load()
 
   def main(args: Array[String]) {
+    checkUsers
 //
-    val cookie=login("livehl@126.com","hl890218")
-    println(userInfo(cookie))
+//    val cookie=login("livehl@126.com","hl890218")
+//    val (allMoney,account)=updateUserAccount(cookie)
+//    println(account)
+  }
+  def collectUser(){
+    val collect=conf.getObjectList("paipai.usertask").asScala.map(v=> (v.get("time").render().toInt ,v.get("action").unwrapped())).toList
+    println(collect)
+    while (true){
+      val i=System.currentTimeMillis()/1000
+      collect.foreach{kv=>
+        if(i% kv._1 ==0){
+          kv._2 match{
+            case "check" =>run(checkUsers())
+          }
+        }
+      }
+      Thread.sleep(1000)
+    }
   }
 
   /**
@@ -38,12 +55,24 @@ object PaiPaiUser {
     c3
   }
 
-  def userInfo(cookie:CookieStore)={
-    val htmlData=NetTool.HttpGet("http://invest.ppdai.com/account/lend",cookie)._2
+  def checkUsers(){
+    val users=new UserAccount().queryAll()
+    println(users.size)
+    users.foreach { v =>
+      val cookie=cacheMethodString("user_cookie_"+v.uid,Int.MaxValue){login(v.userName.decrypt(),v.passWord.decrypt())}
+      val (allMoney,account)=updateUserAccount(v.uid,cookie)
+      //TODO  触发投标业务
+      Thread.sleep(1000)
+      }
+  }
+
+  def updateUserAccount(uid:Int,cookie:CookieStore)={
+      val htmlData=NetTool.HttpGet("http://m.invest.ppdai.com/user/UserProfitCenter",cookie)._2
       val html=Jsoup.parse(htmlData)
-      val lendMoney=html.select(".my-ac-c1-two").text().drop(1)
-      val amount=html.select(".udrtsmouny em").text().drop(1)
-    (lendMoney,amount)
+      val money=html.select(".account-balance .numble")
+      val (allMoney,account)=(money.last().text().toBigDecimal,money.first().text().toBigDecimal)
+      new UserAccount(uid=uid,money=account,allMoney=allMoney).update("uid","money","allMoney")
+      (allMoney,account)
   }
 
 

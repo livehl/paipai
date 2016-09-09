@@ -31,7 +31,7 @@ val root = (project in file(".")).enablePlugins(DockerPlugin).enablePlugins(Java
 
 doc in Compile <<= target.map(_ / "none")
 
-mainClass in Compile := Some("main.PaiPaiLoans")
+mainClass in Compile := Some("main.Main")
 
 dockerCommands :=Seq(
   Cmd("FROM","livehl/java8"),
