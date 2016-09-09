@@ -24,6 +24,10 @@ object PaiPaiUser {
 //    val (allMoney,account)=updateUserAccount(cookie)
 //    println(account)
   }
+
+  /**
+    * 开始用户抓取策略
+    */
   def collectUser(){
     val collect=conf.getObjectList("paipai.usertask").asScala.map(v=> (v.get("time").render().toInt ,v.get("action").unwrapped())).toList
     println(collect)
@@ -55,17 +59,28 @@ object PaiPaiUser {
     c3
   }
 
+  /**
+    * 检查账户资金
+    */
   def checkUsers(){
     val users=new UserAccount().queryAll()
     println(users.size)
     users.foreach { v =>
       val cookie=cacheMethodString("user_cookie_"+v.uid,Int.MaxValue){login(v.userName.decrypt(),v.passWord.decrypt())}
       val (allMoney,account)=updateUserAccount(v.uid,cookie)
-      //TODO  触发投标业务
+      if(account>= 50){
+        //TODO  触发投标业务
+      }
       Thread.sleep(1000)
       }
   }
 
+  /**
+    * 更新账户信息
+    * @param uid
+    * @param cookie
+    * @return
+    */
   def updateUserAccount(uid:Int,cookie:CookieStore)={
       val htmlData=NetTool.HttpGet("http://m.invest.ppdai.com/user/UserProfitCenter",cookie)._2
       val html=Jsoup.parse(htmlData)

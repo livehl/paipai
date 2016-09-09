@@ -9,8 +9,10 @@ import org.jsoup.Jsoup
 import tools._
 import common._
 import common.Tool._
+
 import scala.collection.JavaConverters._
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 /**
   * Created by isaac on 16/3/9.
@@ -27,6 +29,9 @@ object PaiPaiLoans {
 
   }
 
+  /**
+    * 启动标的抓取策略
+    */
   def collectLoan(){
     val collect=conf.getObjectList("paipai.loantask").asScala.map(v=> (v.get("time").render().toInt , v.get("page").render().toInt,v.get("action").unwrapped())).toList
     println(collect)
@@ -50,11 +55,13 @@ object PaiPaiLoans {
     *
     * @param page
     */
-  def catchPage(page:Int){
+  def catchPage(page:Int):List[Loan]={
+    val buffer=new ArrayBuffer[Loan]()
     1 to page foreach{i=>
       val (cookie,str)=NetTool.HttpPost("http://m.invest.ppdai.com/listing/ajaxindex",null,Map("pageIndex"->i.toString))
       val lists=toBean(str,classOf[List[Map[String,AnyRef]]]).map(v=> new Loan().fromJson(v.toJson))
       lists.foreach{loan=>
+        buffer.append(loan)
         val dbLoan=loan.query("ListingId=?",loan.ListingId)
         if(dbLoan.isEmpty){
           loan.insert()
@@ -64,12 +71,13 @@ object PaiPaiLoans {
         }
       }
       if(lists.size<10){
-        return
+        return buffer.toList
       }
       println(new Date().sdatetime + "page:"+i)
       Thread.sleep(5000)
     }
     println(new Date().sdatetime +"page end")
+    buffer.toList
   }
 
   /**
@@ -92,16 +100,20 @@ object PaiPaiLoans {
     *
     * @param id
     */
-  def checkLoan(id:Int){
+  def checkLoan(id:Int)={
       val data=NetTool.HttpGet("http://m.ppdai.com/lend/"+id)._2
       val jsoup=Jsoup.parse(data)
       val funding=jsoup.select(".earningsLine").text().dropRight(1)
     val info=jsoup.select(".userInfo p").html() + jsoup.select(".verifyInfo p").html()
     new Loan(ListingId = id,Funding = funding.toInt, ext=info,lastUpdate = new Date()).update("ListingId","Funding","ext","lastUpdate")
+    funding.toInt
   }
 
 
-
+  /**
+    * 标的html详情
+    * @param id
+    */
   def loanInfo(id:Int){
     val data=NetTool.HttpGet("http://invest.ppdai.com/loan/info?id="+id)._2
     new Loan(ListingId = id,text=data,lastUpdate = new Date()).update("ListingId","text")
