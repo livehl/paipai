@@ -79,8 +79,8 @@ object PaiPaiLoans {
       val ids=DBEntity.queryMap(s"select ListingId from ${new Loan().tableName} where Funding < 100  and Rate >= 20 and createTime >'"+("-1d".dateExp.sdate)+"'  order by Funding desc ").map(_("ListingId").asInstanceOf[Int])
       println(ids.size)
     ids.grouped(100) foreach { page =>
-        println("new page")
-        page.foreach { v =>
+        println("new page:"+page)
+        page.mutile(3).foreach { v =>
             checkLoan(v)
           Thread.sleep(1000)
         }

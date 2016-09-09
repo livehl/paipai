@@ -3,7 +3,7 @@ import NativePackagerHelper._
 
 name := "paipai"
 
-version := "1.1.7"
+version := "1.1.8"
 
 scalaVersion := "2.11.7"
 
@@ -41,5 +41,7 @@ dockerCommands :=Seq(
 )
 
 packageName in Docker := packageName.value
+
+dockerUpdateLatest  in Docker := true
 
 dockerRepository :=Some("registry.aliyuncs.com/zx")
