@@ -59,6 +59,7 @@ object PaiPaiLoans {
         val dbLoan=loan.query("ListingId=?",loan.ListingId)
         if(dbLoan.isEmpty){
           loan.insert()
+          loanInfo(loan.ListingId)
         }else{
           new Loan(dbLoan.head.id,Funding = loan.Funding,lastUpdate = new Date()).update("id","Funding","lastUpdate")
         }
@@ -76,13 +77,13 @@ object PaiPaiLoans {
     * 检查所有未完成的标的状态
     */
   def checkLoans(){
-      val ids=DBEntity.queryMap(s"select ListingId from ${new Loan().tableName} where Funding < 100  and Rate >= 20 and createTime >'"+("-1d".dateExp.sdate)+"'  order by Funding desc ").map(_("ListingId").asInstanceOf[Int])
+      val ids=DBEntity.queryMap(s"select ListingId from ${new Loan().tableName} where Funding < 100 and Funding > 80  and Rate >= 20 and createTime >'"+("-1d".dateExp.sdate)+"'  order by Funding desc ").map(_("ListingId").asInstanceOf[Int])
       println(ids.size)
     ids.grouped(100) foreach { page =>
         println("new page:"+page)
-        page.mutile(3).foreach { v =>
+        page.foreach { v =>
             checkLoan(v)
-          Thread.sleep(1000)
+          Thread.sleep(500)
         }
       }
   }
@@ -97,15 +98,14 @@ object PaiPaiLoans {
       val jsoup=Jsoup.parse(data)
       val funding=jsoup.select(".earningsLine").text().dropRight(1)
     val info=jsoup.select(".userInfo p").html() + jsoup.select(".verifyInfo p").html()
-    new Loan(ListingId = id,Funding = funding.toInt,text=data, ext=info,lastUpdate = new Date()).update("ListingId","Funding","ext","lastUpdate")
+    new Loan(ListingId = id,Funding = funding.toInt, ext=info,lastUpdate = new Date()).update("ListingId","Funding","ext","lastUpdate")
   }
+
+
 
   def loanInfo(id:Int){
     val data=NetTool.HttpGet("http://invest.ppdai.com/loan/info?id="+id)._2
-    val jsoup=Jsoup.parse(data)
-//    val funding=jsoup.select(".earningsLine").text().dropRight(1)
-//    val info=jsoup.select(".userInfo p").html() + jsoup.select(".verifyInfo p").html()
-//    new Loan(ListingId = id,Funding = funding.toInt,ext=info,lastUpdate = new Date()).update("ListingId","Funding","ext","lastUpdate")
+    new Loan(ListingId = id,text=data,lastUpdate = new Date()).update("ListingId","text")
   }
 
 }
