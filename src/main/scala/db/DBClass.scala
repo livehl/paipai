@@ -225,3 +225,15 @@ class LoanUser(val id: String ="",
            val ext: String = "",
            @(ApiModelProperty @field)(value = "创建时间(前端请忽略)", required = false,hidden = true)
            val createTime: Date = new Date(System.currentTimeMillis())) extends BaseDBEntity[LoanUser]("LoanUser")
+
+@ApiModel(value = "LoanText",description = "借款html")
+class LoanText(val id:Int=0,
+           @(ApiModelProperty @field)(value = "标题", required = true)
+           val Title:String="",
+           @(ApiModelProperty @field)(value = "id", required = true)
+           val ListingId:Int=0,
+           @(ApiModelProperty @field)(value = "原始数据", required = true)
+           val text:String="",
+           @(ApiModelProperty @field)(value = "创建日期", required = false,hidden = true)
+           val createTime:Date=new Date()
+          )extends BaseDBEntity[LoanText]("LoanText")

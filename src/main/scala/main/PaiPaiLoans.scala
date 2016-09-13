@@ -64,8 +64,8 @@ object PaiPaiLoans {
         buffer.append(loan)
         val dbLoan=loan.query("ListingId=?",loan.ListingId)
         if(dbLoan.isEmpty){
-          loan.insert()
-          loanInfo(loan.ListingId)
+          val id=loan.insert()
+          loanInfo(id,loan.ListingId,loan.Title)
         }else{
           new Loan(dbLoan.head.id,Funding = loan.Funding,lastUpdate = new Date()).update("id","Funding","lastUpdate")
         }
@@ -114,9 +114,9 @@ object PaiPaiLoans {
     * 标的html详情
     * @param id
     */
-  def loanInfo(id:Int){
+  def loanInfo(lid:Int,id:Int,title:String){
     val data=NetTool.HttpGet("http://invest.ppdai.com/loan/info?id="+id)._2
-    new Loan(ListingId = id,text=data,lastUpdate = new Date()).update("ListingId","text")
+    new LoanText(lid,title,id,data,new Date()).insertWithId()
   }
 
 }
