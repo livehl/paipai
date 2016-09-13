@@ -12,6 +12,8 @@ import tools.NetTool
   * Created by admin on 2016/9/9.
   */
 object PaiPaiBid {
+  def main(args: Array[String]) {
+  }
   /**
     * 投标策略
     * @param uid

@@ -69,7 +69,9 @@ object PaiPaiUser {
       val cookie=cacheMethodString("user_cookie_"+v.uid,Int.MaxValue){login(v.userName.decrypt(),v.passWord.decrypt())}
       val (allMoney,account)=updateUserAccount(v.uid,cookie)
       if(account>= 50){
-        //TODO  触发投标业务
+        // 触发投标业务
+        val amount=if(account>=100) BigDecimal(50) else account
+        PaiPaiBid.bid(v.uid,account)
       }
       Thread.sleep(1000)
       }
