@@ -64,8 +64,8 @@ object PaiPaiUser {
     */
   def checkUsers(){
     val users=new UserAccount().queryAll()
-    println(users.size)
     users.foreach { v =>
+      println(v.userName.decrypt())
       val cookie=cacheMethodString("user_cookie_"+v.uid,Int.MaxValue){login(v.userName.decrypt(),v.passWord.decrypt())}
       val (allMoney,account)=updateUserAccount(v.uid,cookie)
       if(account>= 50){
