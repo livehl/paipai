@@ -60,7 +60,7 @@ object PaiPaiLoans {
     1 to page foreach{i=>
       val (cookie,str)=NetTool.HttpPost("http://m.invest.ppdai.com/listing/ajaxindex",null,Map("pageIndex"->i.toString))
       val lists=toBean(str,classOf[List[Map[String,AnyRef]]]).map(v=> new Loan().fromJson(v.toJson))
-      lists.foreach{loan=>
+      lists.filter(_.Rate>12).foreach{loan=>
         buffer.append(loan)
         val dbLoan=loan.query("ListingId=?",loan.ListingId)
         if(dbLoan.isEmpty){
@@ -73,10 +73,10 @@ object PaiPaiLoans {
       if(lists.size<10){
         return buffer.toList
       }
-      println(new Date().sdatetime + "page:"+i)
+      println(new Date().sdatetime + "catch page:"+i)
       Thread.sleep(5000)
     }
-    println(new Date().sdatetime +"page end")
+    println(new Date().sdatetime +"catch page end")
     buffer.toList
   }
 
@@ -87,7 +87,7 @@ object PaiPaiLoans {
       val ids=DBEntity.queryMap(s"select ListingId from ${new Loan().tableName} where Funding < 100 and Funding > 80  and Rate >= 20 and createTime >'"+("-1d".dateExp.sdate)+"'  order by Funding desc ").map(_("ListingId").asInstanceOf[Int])
       println(ids.size)
     ids.grouped(100) foreach { page =>
-        println("new page:"+page)
+        println("check new page:"+page)
         page.mutile(2).foreach { v =>
             checkLoan(v)
           Thread.sleep(500)
