@@ -68,10 +68,10 @@ object PaiPaiUser {
       println(v.userName.decrypt())
       val cookie=cacheMethodString("user_cookie_"+v.uid,Int.MaxValue){login(v.userName.decrypt(),v.passWord.decrypt())}
       val (allMoney,account)=updateUserAccount(v.uid,cookie)
-      if(account>= 50){
+      if(account>= BigDecimal(50)){
         // 触发投标业务
-        val amount=if(account>=100) BigDecimal(50) else account
-        PaiPaiBid.bid(v.uid,account)
+        val amount=if(account>=BigDecimal(100)) BigDecimal(50) else account
+        PaiPaiBid.bid(v.uid,amount)
       }
       Thread.sleep(1000)
       }
