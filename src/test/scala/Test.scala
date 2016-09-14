@@ -14,7 +14,7 @@ object Test {
   def main(array: Array[String]): Unit = {
 //    println(List(1,6,3,4,5).sortBy(v=> v * -1))
 //    new Setting(-1,"","","").insert()
-    new LoanText().createTable()
+    new Bid().createTable()
 //    println("-2d".dateExp.sdate)
 //    val entity = new ByteArrayEntity("""{"Borrowernumber":"24069614","UserId":0,"listingId":"19129600"}""".getBytes("UTF-8"))
 //    val v=NetTool.HttpPost("http://wirelessgateway.ppdai.com/Invest/BorrowerinfoService/Borrowerinfo",entity=entity)

@@ -150,6 +150,16 @@ class UserAccount(val id:Int=0,
                   val allMoney:BigDecimal=BigDecimal(0),
                   @(ApiModelProperty @field)(value = "创建时间", required = true)
                   val createTime: Date = new Date(System.currentTimeMillis())) extends BaseDBEntity[UserAccount]("UserAccount")
+@ApiModel(value = "Bid",description = "投标记录")
+class Bid(val id:Int=0,
+          @(ApiModelProperty @field)(value = "用户", required = true,reference = "User")
+          val uid:Int=0,
+          @(ApiModelProperty @field)(value = "id", required = true)
+          val lid:Int=0,
+          @(ApiModelProperty @field)(value = "金额", required = true)
+          val money:Int=0,
+          @(ApiModelProperty @field)(value = "创建时间", required = true)
+          val createTime: Date = new Date(System.currentTimeMillis())) extends BaseDBEntity[Bid]("Bid")
 
 @ApiModel(value = "Loan",description = "借款信息")
 class Loan(val id:Int=0,

@@ -4,7 +4,7 @@ import java.util.Date
 
 import common.Cache
 import common.Tool._
-import db.Loan
+import db._
 import org.apache.http.client.CookieStore
 import tools.NetTool
 
@@ -38,10 +38,12 @@ object PaiPaiBid {
     * @return
     */
   def bidLoan(uid:Int,amount:Int,lid:Int,maxMoney:Int)={
-      val  funding=PaiPaiLoans.checkLoan(lid)
+    val  funding=PaiPaiLoans.checkLoan(lid)
     val cookie=Cache.getCache("user_cookie_"+uid)
-    if(funding<100 && cookie.isDefined){
+    val notBid=new Bid().query("uid=? and lid=?",uid,lid).size == 0
+    if(funding<100 && cookie.isDefined && hasBid){
       val (_,html)=NetTool.HttpPost("http://m.invest.ppdai.com/Listing/BuyHotListingByListingId",cookie.get.asInstanceOf[CookieStore],Map("ListingId"->lid.toString,"amount"->amount.toString,"MaxAmount"->maxMoney.toString))
+      new Bid(0,uid,lid,amount,new Date()).insert()
       html.contains("成功")
     }else false
   }
