@@ -73,10 +73,10 @@ object PaiPaiLoans {
       if(lists.size<10){
         return buffer.toList
       }
-      println(new Date().sdatetime + "catch page:"+i)
+      println(new Date().sdatetime + " catch page:"+i)
       Thread.sleep(5000)
     }
-    println(new Date().sdatetime +"catch page end")
+    println(new Date().sdatetime +" catch page end")
     buffer.toList
   }
 
@@ -87,7 +87,7 @@ object PaiPaiLoans {
       val ids=DBEntity.queryMap(s"select ListingId from ${new Loan().tableName} where Funding < 100 and Funding > 80  and Rate >= 20 and createTime >'"+("-1d".dateExp.sdate)+"'  order by Funding desc ").map(_("ListingId").asInstanceOf[Int])
       println(ids.size)
     ids.grouped(100) foreach { page =>
-        println("check new page:"+page)
+        println(" check new page:"+page)
         page.mutile(2).foreach { v =>
             checkLoan(v)
           Thread.sleep(500)
