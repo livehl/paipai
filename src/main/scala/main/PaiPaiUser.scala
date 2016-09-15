@@ -73,6 +73,7 @@ object PaiPaiUser {
         // 触发投标业务
         val amount=if(account>=BigDecimal(100)) BigDecimal(50) else account
         PaiPaiBid.bid(v.uid,amount)
+        updateUserAccount(v.uid,cookie)
       }
       Thread.sleep(1000)
       }
