@@ -44,6 +44,7 @@ object PaiPaiBid {
     if(funding<100 && cookie.isDefined && notBid){
       val (_,html)=NetTool.HttpPost("http://m.invest.ppdai.com/Listing/BuyHotListingByListingId",cookie.get.asInstanceOf[CookieStore],Map("ListingId"->lid.toString,"amount"->amount.toString,"MaxAmount"->maxMoney.toString))
       new Bid(0,uid,lid,amount,new Date()).insert()
+      println(s"bid:${amount}")
       html.contains("成功")
     }else false
   }

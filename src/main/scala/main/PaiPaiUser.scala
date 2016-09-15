@@ -66,8 +66,9 @@ object PaiPaiUser {
     val users=new UserAccount().queryAll()
     users.foreach { v =>
       println(v.userName.decrypt())
-      val cookie=cacheMethodString("user_cookie_"+v.uid,Int.MaxValue){login(v.userName.decrypt(),v.passWord.decrypt())}
+      val cookie=cacheMethodString("user_cookie_"+v.uid,3600*5){login(v.userName.decrypt(),v.passWord.decrypt())}
       val (allMoney,account)=updateUserAccount(v.uid,cookie)
+      println(v.userName.decrypt()+":"+account)
       if(account>= BigDecimal(50)){
         // 触发投标业务
         val amount=if(account>=BigDecimal(100)) BigDecimal(50) else account
