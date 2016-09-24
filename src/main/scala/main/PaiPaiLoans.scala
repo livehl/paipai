@@ -59,12 +59,13 @@ object PaiPaiLoans {
     1 to page foreach{i=>
       val (cookie,str)=NetTool.HttpPost("http://m.invest.ppdai.com/listing/ajaxindex",null,Map("pageIndex"->i.toString))
       val lists=toBean(str,classOf[List[Map[String,AnyRef]]]).map(v=> new Loan().fromJson(v.toJson))
-      lists.filter(v=> if(fast) v.Rate>=20 else v.Rate>12).foreach{loan=>
+      lists.filter(v=> if(fast) v.Rate>=20 else v.Rate>18).foreach{loan=>
         buffer.append(loan)
         val dbLoan=loan.query("ListingId=?",loan.ListingId)
         if(dbLoan.isEmpty){
           val id=loan.insert()
           loanInfo(id,loan.ListingId,loan.Title)
+          //TODO 触发快投策略
         }else{
           new Loan(dbLoan.head.id,Funding = loan.Funding,lastUpdate = new Date()).update("id","Funding","lastUpdate")
         }
