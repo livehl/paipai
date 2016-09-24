@@ -21,7 +21,7 @@ object PaiPaiBid {
     * @return
     */
   def bid(uid:Int,amount:BigDecimal)={
-    val loans=PaiPaiLoans.catchPage(100).filter{v=>
+    val loans=PaiPaiLoans.catchPage(100,true).filter{v=>
       v.Title.contains("次") && !v.Title.contains("第1次") && !v.Title.contains("首次")  && v.Rate >=20
     }.sortBy(_.Rate * -1 )
     loans.foldLeft(false){(ret,loan)=> if(ret) ret else bidLoan(uid,amount.toInt,loan.ListingId,loan.Amount.toInt)}

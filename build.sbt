@@ -3,7 +3,7 @@ import NativePackagerHelper._
 
 name := "paipai"
 
-version := "1.3.0"
+version := "1.3.1"
 
 scalaVersion := "2.11.7"
 

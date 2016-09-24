@@ -54,7 +54,7 @@ object PaiPaiLoans {
     *
     * @param page
     */
-  def catchPage(page:Int):List[Loan]={
+  def catchPage(page:Int,fast:Boolean=false):List[Loan]={
     val buffer=new ArrayBuffer[Loan]()
     1 to page foreach{i=>
       val (cookie,str)=NetTool.HttpPost("http://m.invest.ppdai.com/listing/ajaxindex",null,Map("pageIndex"->i.toString))
@@ -73,7 +73,7 @@ object PaiPaiLoans {
         return buffer.toList
       }
       println(new Date().sdatetime + " catch page:"+i)
-      Thread.sleep(5000)
+      Thread.sleep(if(fast)200 else 5000)
     }
     println(new Date().sdatetime +" catch page end")
     buffer.toList
