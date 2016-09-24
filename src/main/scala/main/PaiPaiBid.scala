@@ -39,12 +39,15 @@ object PaiPaiBid {
     */
   def bidLoan(uid:Int,amount:Int,lid:Int,maxMoney:Int):Boolean={
     val  funding=PaiPaiLoans.checkLoan(lid)
-    //TODO 审核逾期信息
-//    val fullData=new LoanText().queryOne("ListingId=?",lid).map(_.text)
-//    if(fullData.isEmpty) return false
-//    val cutStart=fullData.get.indexOf("<p>正常还清")
-//    if(cutStart < 0) return false
-//    val txt=fullData.get.substring(cutStart,fullData.get.indexOf("</p>",cutStart))
+    //审核逾期信息
+    val fullData=new LoanText().queryOne("ListingId=?",lid).map(_.text)
+    if(fullData.isEmpty) return false
+    val cutStart=fullData.get.indexOf("<p>正常还清")
+    if(cutStart < 0) return false
+    val txt=fullData.get.substring(cutStart+3,fullData.get.indexOf("</p>",cutStart))
+    val List(count,yu,hei)=txt.split("，").map(v=> v.split("：").last.trim.dropRight(1).toInt).toList
+    //没有成功还款过或者有过逾期15天的记录或者逾期次数大于借款数的1/10
+    if(count==0 || hei>0 || yu> (count/10)) return false
     val cookie=Cache.getCache("user_cookie_"+uid)
     val notBid=new Bid().query("uid=? and lid=?",uid,lid).size == 0
     if(funding<100 && cookie.isDefined && notBid){
