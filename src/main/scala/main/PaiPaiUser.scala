@@ -66,15 +66,22 @@ object PaiPaiUser {
     val users=new UserAccount().queryAll()
     users.foreach { v =>
       println(v.userName.decrypt())
-      val cookie=cacheMethodString("user_cookie_"+v.uid,3600*5){login(v.userName.decrypt(),v.passWord.decrypt())}
-      val (allMoney,account)=updateUserAccount(v.uid,cookie)
-      println(v.userName.decrypt()+":"+account)
-      if(account>= BigDecimal(50)){
-        // 触发投标业务
-        val amount=if(account>=BigDecimal(100)) BigDecimal(50) else account
-        PaiPaiBid.bid(v.uid,amount)
-        updateUserAccount(v.uid,cookie)
+      val ck=cacheMethodString("user_cookie_"+v.uid,3600*5){login(v.userName.decrypt(),v.passWord.decrypt())}
+      def bid(user: UserAccount,cookie: CookieStore){
+        val (allMoney,account)=updateUserAccount(v.uid,cookie)
+        println(v.userName.decrypt()+":"+account)
+        if(account>= BigDecimal(50)){
+          // 触发投标业务
+          val amount=if(account>=BigDecimal(100)) BigDecimal(50) else account
+          val hasBid=PaiPaiBid.bid(v.uid,amount)
+          if(account>=BigDecimal(100) &&hasBid){ //循环投标
+            bid(user,cookie)
+          }else{
+            updateUserAccount(v.uid,cookie)
+          }
+        }
       }
+      bid(v,ck)
       Thread.sleep(1000)
       }
   }
