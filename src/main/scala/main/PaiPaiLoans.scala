@@ -43,7 +43,6 @@ object PaiPaiLoans {
             case "check" =>run(checkLoans())
             case _=>run(catchPage(kv._2))
           }
-
         }
       }
       Thread.sleep(1000)
@@ -115,8 +114,10 @@ object PaiPaiLoans {
     * @param id
     */
   def loanInfo(lid:Int,id:Int,title:String){
-    val data=NetTool.HttpGet("http://invest.ppdai.com/loan/info?id="+id)._2
+    val cookie=PaiPaiUser.getUserCookie
+    val data=NetTool.HttpGet("http://invest.ppdai.com/loan/info?id="+id,cookie)._2
     new LoanText(lid,title,id,data,new Date()).insertWithId()
+    data
   }
 
 }

@@ -21,7 +21,7 @@ object PaiPaiBid {
     * @return
     */
   def bid(uid:Int,amount:BigDecimal)={
-    val loans=PaiPaiLoans.catchPage(10).filter{v=>
+    val loans=PaiPaiLoans.catchPage(100).filter{v=>
       v.Title.contains("次") && !v.Title.contains("第1次") && !v.Title.contains("首次")  && v.Rate >=20
     }.sortBy(_.Rate * -1 )
     loans.foldLeft(false){(ret,loan)=> if(ret) ret else bidLoan(uid,amount.toInt,loan.ListingId,loan.Amount.toInt)}
@@ -37,8 +37,14 @@ object PaiPaiBid {
     * @param maxMoney
     * @return
     */
-  def bidLoan(uid:Int,amount:Int,lid:Int,maxMoney:Int)={
+  def bidLoan(uid:Int,amount:Int,lid:Int,maxMoney:Int):Boolean={
     val  funding=PaiPaiLoans.checkLoan(lid)
+    //TODO 审核逾期信息
+//    val fullData=new LoanText().queryOne("ListingId=?",lid).map(_.text)
+//    if(fullData.isEmpty) return false
+//    val cutStart=fullData.get.indexOf("<p>正常还清")
+//    if(cutStart < 0) return false
+//    val txt=fullData.get.substring(cutStart,fullData.get.indexOf("</p>",cutStart))
     val cookie=Cache.getCache("user_cookie_"+uid)
     val notBid=new Bid().query("uid=? and lid=?",uid,lid).size == 0
     if(funding<100 && cookie.isDefined && notBid){

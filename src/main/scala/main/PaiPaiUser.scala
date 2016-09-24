@@ -93,6 +93,11 @@ object PaiPaiUser {
       new UserAccount(uid=uid,money=account,allMoney=allMoney).update("uid","money","allMoney")
       (allMoney,account)
   }
+  //随机获取一个用户cookie
+  def getUserCookie={
+    val user=new UserAccount().queryAll().head
+     cacheMethodString("user_cookie_"+user.uid,3600*12){login(user.userName.decrypt(),user.passWord.decrypt())}
+  }
 
 
 }
