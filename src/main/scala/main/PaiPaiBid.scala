@@ -24,10 +24,10 @@ object PaiPaiBid {
   def bid(uid:Int,amount:BigDecimal)={
     val loans=cacheMethodString("bidLoans",60* 10) {
       PaiPaiLoans.catchPage(100, true).filter { v =>
-        v.Title.contains("次") && !v.Title.contains("第1次") && !v.Title.contains("首次") && v.Rate >= 20
+//        v.Title.contains("次") && !v.Title.contains("第1次") && !v.Title.contains("首次") &&
+          v.Rate >= 20
       }.sortBy(_.Rate * -1)
     }
-    println(loans.size)
     loans.foldLeft(false){(ret,loan)=> if(ret) ret else bidLoan(uid,amount.toInt,loan.ListingId,loan.Amount.toInt)}
 //    val loans=new Loan().query(s"createTime > '${new Date().sdate}' and Title LIKE '%次%'  and Title not LIKE '%第1次%' and  Title not LIKE '%首次%'  and Rate >=20 and Funding < 100   order BY Rate desc,CreditCode,Months,Amount desc,Funding  limit 100 ")
 
