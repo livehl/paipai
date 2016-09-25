@@ -59,25 +59,38 @@ object PaiPaiLoans {
     1 to page foreach{i=>
       val (cookie,str)=NetTool.HttpPost("http://m.invest.ppdai.com/listing/ajaxindex",null,Map("pageIndex"->i.toString))
       val lists=toBean(str,classOf[List[Map[String,AnyRef]]]).map(v=> new Loan().fromJson(v.toJson))
-      lists.filter(v=> if(fast) v.Rate>=20 else v.Rate>18).foreach{loan=>
+      lists.filter(v=> if(fast) v.Rate>=20 else v.Rate>=18).foreach{loan=>
         buffer.append(loan)
-        val dbLoan=loan.query("ListingId=?",loan.ListingId)
-        if(dbLoan.isEmpty){
-          val id=loan.insert()
-          loanInfo(id,loan.ListingId,loan.Title)
-          //TODO 触发快投策略
-        }else{
-          new Loan(dbLoan.head.id,Funding = loan.Funding,lastUpdate = new Date()).update("id","Funding","lastUpdate")
-        }
       }
-      if(lists.size<10){
+      if(lists.size<10){//跳出循环
+        println(new Date().sdatetime +s" catch page end:${if(fast)"fast" else ""}")
+        insertLoans(buffer.toList)
         return buffer.toList
       }
       println(new Date().sdatetime + s" catch page:${i},${if(fast)"fast" else ""}")
-      Thread.sleep(if(fast)200 else 5000)
+      Thread.sleep(if(fast)100 else 1000)
     }
     println(new Date().sdatetime +s" catch page end:${if(fast)"fast" else ""}")
+    insertLoans(buffer.toList)
     buffer.toList
+  }
+
+  /**
+    * 保存数据到数据库
+    * @param loans
+    */
+  def insertLoans(loans:List[Loan]): Unit ={
+    val dbLoans=new Loan().query(s"ListingId in (${loans.map(_.ListingId).mkString(",")})")
+    val lidMaps=dbLoans.map(v=> v.ListingId->v).toMap
+    loans.foreach{loan=>
+      if(lidMaps.contains(loan.ListingId)){
+        new Loan(lidMaps(loan.ListingId).id,Funding = loan.Funding,lastUpdate = new Date()).update("id","Funding","lastUpdate")
+      }else{
+        val id=loan.insert()
+        loanInfo(id,loan.ListingId,loan.Title)
+      }
+    }
+
   }
 
   /**
