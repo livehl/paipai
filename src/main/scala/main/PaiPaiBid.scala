@@ -39,11 +39,11 @@ object PaiPaiBid {
     * @param amount
     * @return
     */
-  def quickBid(uid:Int,amount:BigDecimal)={
+  def quickBid(uid:Int,amount:Int)={
     val loans=cacheMethodString("bidLoans",60) {
       PaiPaiLoans.catchPage(10, true).filter(_.Rate >=20).sortBy(_.Rate * -1)
     }
-    loans.foldLeft(false){(ret,loan)=> if(ret) ret else bidLoan(uid,amount.toInt,loan.ListingId,loan.Amount.toInt)}
+    loans.foldLeft(false){(ret,loan)=> if(ret) ret else bidLoan(uid,amount,loan.ListingId,loan.Amount.toInt)}
   }
 
   /**

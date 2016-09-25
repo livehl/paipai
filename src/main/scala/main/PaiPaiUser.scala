@@ -94,13 +94,14 @@ object PaiPaiUser {
     users.foreach { v =>
       println(v.userName.decrypt())
       val ck=cacheMethodString("user_cookie_"+v.uid,3600*5){login(v.userName.decrypt(),v.passWord.decrypt())}
+      var money=v.money
       def bid(user: UserAccount,cookie: CookieStore){
-        println(v.userName.decrypt()+":quick:"+v.money)
-        if(v.money>= BigDecimal(50)){
+        println(v.userName.decrypt()+":quick:"+money)
+        if(money>= BigDecimal(200)){
           // 触发投标业务
-          val amount=if(v.money>=BigDecimal(100)) BigDecimal(50) else v.money
-          val hasBid=PaiPaiBid.quickBid(v.uid,amount)
+          val hasBid=PaiPaiBid.quickBid(v.uid,50)
           if(v.money>=BigDecimal(100) &&hasBid){ //循环投标
+            money -= BigDecimal(50)
             bid(user,cookie)
           }else{
             updateUserAccount(v.uid,cookie)
