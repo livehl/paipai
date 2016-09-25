@@ -37,6 +37,7 @@ object PaiPaiUser {
         if(i% kv._1 ==0){
           kv._2 match{
             case "check" =>run(checkUsers())
+            case "quick" =>run(quickUsers())
           }
         }
       }
@@ -84,6 +85,31 @@ object PaiPaiUser {
       bid(v,ck)
       Thread.sleep(1000)
       }
+  }
+  /**
+    * 快速投标
+    */
+  def quickUsers(){
+    val users=new UserAccount().queryAll()
+    users.foreach { v =>
+      println(v.userName.decrypt())
+      val ck=cacheMethodString("user_cookie_"+v.uid,3600*5){login(v.userName.decrypt(),v.passWord.decrypt())}
+      def bid(user: UserAccount,cookie: CookieStore){
+        println(v.userName.decrypt()+":quick:"+v.money)
+        if(v.money>= BigDecimal(50)){
+          // 触发投标业务
+          val amount=if(v.money>=BigDecimal(100)) BigDecimal(50) else v.money
+          val hasBid=PaiPaiBid.quickBid(v.uid,amount)
+          if(v.money>=BigDecimal(100) &&hasBid){ //循环投标
+            bid(user,cookie)
+          }else{
+            updateUserAccount(v.uid,cookie)
+          }
+        }
+      }
+      bid(v,ck)
+      Thread.sleep(1000)
+    }
   }
 
   /**
