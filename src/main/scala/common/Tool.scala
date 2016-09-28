@@ -1,6 +1,6 @@
 package common
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+import java.io._
 import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util
@@ -380,5 +380,18 @@ object Tool {
   }
 
   def uuid=UUID.randomUUID().toString.replace("-","")
+
+  def Stream2Byte(is: InputStream)={
+    val baos=new  ByteArrayOutputStream
+    var b = is.read()
+    while (b != -1) {
+      baos.write(b)
+      b = is.read()
+    }
+    baos.toByteArray
+  }
+  def File2Byte(file: File):Array[Byte]={
+    Stream2Byte(new FileInputStream(file))
+  }
 
 }
