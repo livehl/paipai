@@ -35,8 +35,8 @@ object PaiPaiLoans {
   def collectLoan(){
     val collect=conf.getObjectList("paipai.loantask").asScala.map(v=> (v.get("time").render().toInt , v.get("page").render().toInt,v.get("action").unwrapped())).toList
     println(collect)
-    var i=0
     while (true){
+      val i=System.currentTimeMillis()/1000
       collect.foreach{kv=>
         if(i% kv._1 ==0){
           kv._3 match{
@@ -46,7 +46,6 @@ object PaiPaiLoans {
         }
       }
       Thread.sleep(1000)
-      i+=1
     }
   }
 

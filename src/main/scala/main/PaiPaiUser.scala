@@ -31,8 +31,8 @@ object PaiPaiUser {
   def collectUser(){
     val collect=conf.getObjectList("paipai.usertask").asScala.map(v=> (v.get("time").render().toInt ,v.get("action").unwrapped())).toList
     println(collect)
-    var i=0
     while (true){
+      val i=System.currentTimeMillis()/1000
       collect.foreach{kv=>
         if(i% kv._1 ==0){
           kv._2 match{
@@ -42,7 +42,6 @@ object PaiPaiUser {
         }
       }
       Thread.sleep(1000)
-      i+=1
     }
   }
 
