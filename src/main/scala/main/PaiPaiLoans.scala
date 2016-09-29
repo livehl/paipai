@@ -56,8 +56,9 @@ object PaiPaiLoans {
     */
   def catchPage(page:Int,fast:Boolean=false):List[Loan]={
     val buffer=new ArrayBuffer[Loan]()
+    val cookie=PaiPaiUser.getUserCookie
     1 to page foreach{i=>
-      val (cookie,str)=NetTool.HttpPost("http://m.invest.ppdai.com/listing/ajaxindex",null,Map("pageIndex"->i.toString))
+      val (_,str)=NetTool.HttpPost("http://m.invest.ppdai.com/listing/ajaxindex",cookie,Map("pageIndex"->i.toString))
       val lists=toBean(str,classOf[List[Map[String,AnyRef]]]).map(v=> new Loan().fromJson(v.toJson))
       lists.filter(v=> if(fast) v.Rate>=20 else v.Rate>=18).foreach{loan=>
         buffer.append(loan)
@@ -117,8 +118,7 @@ object PaiPaiLoans {
       val data=NetTool.HttpGet("http://m.ppdai.com/lend/"+id)._2
       val jsoup=Jsoup.parse(data)
       val funding=jsoup.select(".earningsLine").text().dropRight(1)
-    val info=jsoup.select(".userInfo p").html() + jsoup.select(".verifyInfo p").html()
-    new Loan(ListingId = id,Funding = funding.toInt, ext=info,lastUpdate = new Date()).update("ListingId","Funding","ext","lastUpdate")
+    new Loan(ListingId = id,Funding = funding.toInt,lastUpdate = new Date()).update("ListingId","Funding","lastUpdate")
     funding.toInt
   }
 
