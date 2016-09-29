@@ -18,7 +18,7 @@ object GPU {
     val kernel: Kernel = new Kernel() {
       @Override def run() {
         val gid: Int = getGlobalId()
-        val num=Math.sqrt(arrayIn(gid) * arrayIn(gid)).toFloat
+        val num=arrayIn(gid) * arrayIn(gid)
         if(num>10000)
         arrayOut(gid) = num/10000
         else
@@ -29,7 +29,8 @@ object GPU {
     val time=System.currentTimeMillis()
     kernel.setExecutionMode(Kernel.EXECUTION_MODE.GPU)
     //执行计算
-    kernel.execute(Range.create(3090000))
+
+    1 to 1000 foreach(i => kernel.execute(Range.create(3090000)))
     println("use time:"+(System.currentTimeMillis()-time))
 
     System.out.println("Execution mode=" + kernel.getExecutionMode)
