@@ -2,7 +2,7 @@ package main
 
 import java.util.Date
 
-import common.Cache
+import common.{Cache, OtsCache}
 import common.Tool._
 import db._
 import org.apache.http.client.CookieStore
@@ -59,7 +59,8 @@ object PaiPaiBid {
     val notBid=new Bid().query("uid=? and lid=?",uid,lid).size == 0
     if(!notBid) return false
     //审核逾期信息
-    val fullData=new LoanText().queryOne("ListingId=?",lid).map(_.text)
+    val cacheData=OtsCache.getCache(lid).map(v=> new String(v))
+    val fullData=if(cacheData.isDefined) cacheData else new LoanText().queryOne("ListingId=?",lid).map(_.text)
     if(fullData.isEmpty) return false
     val cutStart=fullData.get.indexOf("<p>正常还清")
     if(cutStart < 0) return false

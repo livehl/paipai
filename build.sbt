@@ -3,7 +3,7 @@ import NativePackagerHelper._
 
 name := "paipai"
 
-version := "1.4.3"
+version := "1.4.4"
 
 scalaVersion := "2.11.7"
 
@@ -21,7 +21,8 @@ libraryDependencies ++= Seq(
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.3",
   "net.jpountz.lz4" % "lz4" % "1.3.0",
   "com.typesafe" % "config" % "1.3.0",
-  "io.swagger" % "swagger-annotations" % "1.5.6"
+  "io.swagger" % "swagger-annotations" % "1.5.6",
+  "com.aliyun.openservices" % "tablestore" % "4.1.0"
 )
 
 resolvers := Seq(Resolver.defaultLocal,"handuser" at "http://sbt.handuser.com/maven2/")++resolvers.value

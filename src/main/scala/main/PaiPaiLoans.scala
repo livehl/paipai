@@ -132,6 +132,7 @@ object PaiPaiLoans {
     val cookie=PaiPaiUser.getUserCookie
     val data=NetTool.HttpGet("http://invest.ppdai.com/loan/info?id="+id,cookie)._2
     new LoanText(lid,title,id,data,new Date()).insertWithId()
+    OtsCache.setCache(lid,data.getBytes("utf-8"))
     data
   }
 
