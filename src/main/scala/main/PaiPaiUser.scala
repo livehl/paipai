@@ -20,6 +20,7 @@ object PaiPaiUser {
 
   def main(args: Array[String]) {
     checkUsers
+    System.exit(0)
 //
 //    val cookie=login("livehl@126.com","hl890218")
 //    val (allMoney,account)=updateUserAccount(cookie)
