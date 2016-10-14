@@ -28,7 +28,7 @@ object AESCoder {
   }
 
   def toKey(key: String): Key = {
-    return toKey(key.getBytes())
+    return toKey(key.getBytes("utf-8"))
   }
 
   /**
@@ -51,7 +51,7 @@ object AESCoder {
    * @return
    */
   def encrypt(data: String, key: String): String = {
-    return bytes2hex(encrypt(data.getBytes(), toKey(key.getBytes)))
+    return bytes2hex(encrypt(data.getBytes("utf-8"), toKey(key.getBytes("utf-8"))))
   }
 
   /**
@@ -61,7 +61,7 @@ object AESCoder {
    * @return
    */
   def encrypt(data: String, key: Key): String = {
-    return bytes2hex(encrypt(data.getBytes(), key))
+    return bytes2hex(encrypt(data.getBytes("utf-8"), key))
   }
 
 
@@ -99,7 +99,7 @@ object AESCoder {
    * @return
    */
   def decrypt(data: String, key: String): String = {
-    return new String(decrypt(hex2bytes(data), toKey(key.getBytes)),"utf-8")
+    return new String(decrypt(hex2bytes(data), toKey(key.getBytes("utf-8"))),"utf-8")
   }
 
   /**
