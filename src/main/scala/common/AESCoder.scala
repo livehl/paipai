@@ -99,7 +99,7 @@ object AESCoder {
    * @return
    */
   def decrypt(data: String, key: String): String = {
-    return new String(decrypt(hex2bytes(data), toKey(key.getBytes)))
+    return new String(decrypt(hex2bytes(data), toKey(key.getBytes)),"utf-8")
   }
 
   /**
@@ -109,7 +109,7 @@ object AESCoder {
    * @return
    */
   def decrypt(data: String, key: Key): String = {
-    return new String(decrypt(hex2bytes(data), key))
+    return new String(decrypt(hex2bytes(data), key),"utf-8")
   }
 
   /**
