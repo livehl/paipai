@@ -19,12 +19,12 @@ object PaiPaiUser {
   lazy val conf = ConfigFactory.load()
 
   def main(args: Array[String]) {
-    checkUsers
-    System.exit(0)
-//
-//    val cookie=login("livehl@126.com","hl890218")
-//    val (allMoney,account)=updateUserAccount(cookie)
+//    checkUsers
+    checkBorrowUsers
+//    val cookie=cacheOTS("testLogin"){login("livehl@126.com","hl890218")}
+//    val (allMoney,_,account)=updateUserBorrowAccount(1,cookie)
 //    println(account)
+    System.exit(0)
   }
 
   /**
@@ -40,6 +40,7 @@ object PaiPaiUser {
           kv._2 match{
             case "check" =>run(checkUsers())
             case "quick" =>run(quickUsers())
+            case "borrowCheck"=>run(checkBorrowUsers)
           }
         }
       }
@@ -97,6 +98,21 @@ object PaiPaiUser {
       }
   }
   /**
+    * 检查贷款账户资金
+    */
+  def checkBorrowUsers(){
+    val users=new UserAccount().queryAll()
+    users.foreach { v =>
+      println(v.userName.decrypt())
+      val ck=cacheMethodString("user_cookie_"+v.uid,3600*24){login(v.userName.decrypt(),v.passWord.decrypt())}
+      val (_,canBorrowMoney,_)=updateUserBorrowAccount(v.uid,ck)
+      if(canBorrowMoney>1000){
+         PaiPaiBorrow.borrow(v.uid,10000)
+      }
+      Thread.sleep(1000)
+    }
+  }
+  /**
     * 快速投标
     */
   def quickUsers(){
@@ -125,6 +141,7 @@ object PaiPaiUser {
 
   /**
     * 更新账户信息
+    *
     * @param uid
     * @param cookie
     * @return
@@ -136,6 +153,27 @@ object PaiPaiUser {
       val (allMoney,account)=(money.last().text().toBigDecimal,money.first().text().toBigDecimal)
       new UserAccount(uid=uid,money=account,allMoney=allMoney).update("uid","money","allMoney")
       (allMoney,account)
+  }
+  /**
+    * 更新借款账户信息
+    *
+    * @param uid
+    * @param cookie
+    * @return
+    */
+  def updateUserBorrowAccount(uid:Int,cookie:CookieStore)={
+    val html=Jsoup.parse(NetTool.HttpGet("http://invest.ppdai.com/account/lend",cookie)._2)
+    val money=html.select(".my-ac-ctListall em").get(2)
+    val allBorrowMoney=money.text().drop(1).replace(",","").toBigDecimal
+    val canBorrowhtml=Jsoup.parse(NetTool.HttpGet("http://loan.ppdai.com/borrow/createlist/6",cookie)._2)
+    val canBorrowMoneyHtml=canBorrowhtml.select(".my-ac-balanceNum")
+    val canBorrowMoney=canBorrowMoneyHtml.text().replace(",","").toBigDecimal
+    val dayReturnHtml=Jsoup.parse(NetTool.HttpGet("http://loan.ppdai.com/account/repaymentlist",cookie)._2)
+    //TODO 记录贷款业务
+    val returnList=dayReturnHtml.select(".repaypublist tr").asScala.filter(v=> v.select(".info").size()>0 &&v.select(".info").first().text().toDate.before(new Date()))
+    val dayReturnMoney=returnList.map(_.select(".moneyCurrent").text().drop(1).toBigDecimal).sum
+    new UserAccount(uid=uid,allBorrowMoney=allBorrowMoney,canBorrowMoney=canBorrowMoney,dayReturnMoney = dayReturnMoney).update("uid","allBorrowMoney","canBorrowMoney","dayReturnMoney")
+    (allBorrowMoney,canBorrowMoney,dayReturnMoney)
   }
   //随机获取一个用户cookie
   def getUserCookie={

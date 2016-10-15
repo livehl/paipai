@@ -34,10 +34,10 @@ object ReflectTool {
    * @author 黄林
    */
   def getBytesByObject(obj: AnyRef) = {
-    val baos = new ByteArrayOutputStream();
-    val oos = new ObjectOutputStream(baos);
-    oos.writeObject(obj);
-    baos.toByteArray();
+    val baos = new ByteArrayOutputStream()
+    val oos = new ObjectOutputStream(baos)
+    oos.writeObject(obj)
+    baos.toByteArray()
   }
 
   /**
@@ -51,9 +51,9 @@ object ReflectTool {
    * @author 黄林
    */
   def getObjectByBytes(data: Array[Byte]) = {
-    val bais = new ByteArrayInputStream(data);
-    val ois = new ObjectInputStream(bais);
-    ois.readObject();
+    val bais = new ByteArrayInputStream(data)
+    val ois = new ObjectInputStream(bais)
+    ois.readObject()
   }
 
   /**

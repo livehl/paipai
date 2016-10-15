@@ -59,7 +59,7 @@ object PaiPaiBid {
     val notBid=new Bid().query("uid=? and lid=?",uid,lid).size == 0
     if(!notBid) return false
     //审核逾期信息
-    val cacheData=OtsCache.getCache(lid).map(v=> new String(v,"utf-8"))
+    val cacheData=OtsCache.getCache[String](lid)
     println(if(cacheData.isEmpty) "use db" else "use cache")
     val fullData=if(cacheData.isDefined) cacheData else new LoanText().queryOne("ListingId=?",lid).map(_.text)
     if(fullData.isEmpty) return false

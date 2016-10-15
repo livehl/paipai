@@ -231,6 +231,16 @@ object Tool {
       v
     }
   }
+  def cacheOTS[T<:AnyRef](key: String)(f: => T):T = {
+    val value=OtsCache.getCache[T](key)
+    if (value.isDefined) {
+      value.get.asInstanceOf[T]
+    } else {
+      val v = f
+      OtsCache.setCache(key, v)
+      v
+    }
+  }
 
   //后台执行
   def run[T](body: => T) = Future[T](body)

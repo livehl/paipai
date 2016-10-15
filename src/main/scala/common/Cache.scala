@@ -13,6 +13,7 @@ import concurrent.duration._
 import scala.collection.JavaConversions._
 import com.alicloud.openservices.tablestore.model._
 import com.alicloud.openservices.tablestore._
+import tools.ReflectTool
 
 /**
   * Created by isaac on 16/2/15.
@@ -99,10 +100,11 @@ object OtsCache {
     }
   }
 
-  def setCache(key:String,data:Array[Byte]){
+  def setCache(key:String,obj:AnyRef){
     val rowChange = new RowPutChange(cacheTableName)
     val primaryKey =  PrimaryKeyBuilder.createPrimaryKeyBuilder().addPrimaryKeyColumn("key", PrimaryKeyValue.fromString(key)).build()
     rowChange.setPrimaryKey(primaryKey)
+    val data=ReflectTool.getBytesByObject(obj)
     rowChange.addColumn("value", ColumnValue.fromBinary(if(useZ4z)data.z4z else data))
     rowChange.addColumn("z4z", ColumnValue.fromBoolean(useZ4z))
     rowChange.setCondition(new Condition(RowExistenceExpectation.IGNORE))
@@ -114,7 +116,7 @@ object OtsCache {
       result.getConsumedCapacity().getCapacityUnit().getWriteCapacityUnit()
     }
   }
-  def getCache(key: String):Option[Array[Byte]] = {
+  def getCache[T](key: String):Option[T] = {
     val now = System.currentTimeMillis() / 1000
     val criteria = new SingleRowQueryCriteria(cacheTableName)
     val primaryKey =PrimaryKeyBuilder.createPrimaryKeyBuilder().addPrimaryKeyColumn("key", PrimaryKeyValue.fromString(key)).build()
@@ -122,14 +124,18 @@ object OtsCache {
     criteria.setMaxVersions(1)
     val request = new GetRowRequest()
     request.setRowQueryCriteria(criteria)
-    var value:Option[Array[Byte]]=None
+    var value:Option[T]=None
     Tool.reTry(3) {
       val result = client.getRow(request)
       val row = result.getRow()
-      if (!result.getRow.getColumns.isEmpty){
+      if (result.getRow !=null && !result.getRow.isEmpty){
         val dataMap = ("value"::"z4z"::Nil).map(k => k -> getColData(row.getColumn(k).map(_.getValue).head)).toMap
         val hasZ4z=dataMap.getOrElse("z4z",false).asInstanceOf[Boolean]
-        value=Some(if(hasZ4z) dataMap("value").asInstanceOf[Array[Byte]].unz4z else dataMap("value").asInstanceOf[Array[Byte]])
+        val data=if(hasZ4z) dataMap("value").asInstanceOf[Array[Byte]].unz4z else dataMap("value").asInstanceOf[Array[Byte]]
+        val obj=ReflectTool.getObjectByBytes(data)
+        if(obj.isInstanceOf[T]){
+          value=Some(obj.asInstanceOf[T])
+        }
       }
     }
     value
