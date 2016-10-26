@@ -20,9 +20,9 @@ object PaiPaiUser {
 
   def main(args: Array[String]) {
 //    checkUsers
-    checkBorrowUsers
-//    val cookie=cacheOTS("testLogin"){login("livehl@126.com","hl890218")}
-//    val (allMoney,_,account)=updateUserBorrowAccount(1,cookie)
+//    checkBorrowUsers
+    val cookie=cacheOTS("testLogin"){login("livehl@126.com","hl890218")}
+    val (allMoney,_,account)=updateUserBorrowAccount(1,cookie)
 //    println(account)
     System.exit(0)
   }
@@ -97,6 +97,16 @@ object PaiPaiUser {
       Thread.sleep(1000)
       }
   }
+  //更新账户余额
+  def updateUsers(){
+    val users=new UserAccount().queryAll()
+    users.foreach { v =>
+      println(v.userName.decrypt())
+      val ck=cacheMethodString("user_cookie_"+v.uid,3600*24){login(v.userName.decrypt(),v.passWord.decrypt())}
+      updateUserAccount(v.uid,ck)
+      Thread.sleep(1000)
+    }
+  }
   /**
     * 检查贷款账户资金
     */
@@ -170,6 +180,9 @@ object PaiPaiUser {
     val canBorrowMoney=canBorrowMoneyHtml.text().replace(",","").toBigDecimal
     val dayReturnHtml=Jsoup.parse(NetTool.HttpGet("http://loan.ppdai.com/account/repaymentlist",cookie)._2)
     //TODO 记录贷款业务
+
+//    new Borrow(0,uid,"",amount.toInt,null,new Date()).insert()
+
     val returnList=dayReturnHtml.select(".repaypublist tr").asScala.filter(v=> v.select(".info").size()>0 &&v.select(".info").first().text().toDate.before(new Date()))
     val dayReturnMoney=returnList.map(_.select(".moneyCurrent").text().drop(1).toBigDecimal).sum
     new UserAccount(uid=uid,allBorrowMoney=allBorrowMoney,canBorrowMoney=canBorrowMoney,dayReturnMoney = dayReturnMoney).update("uid","allBorrowMoney","canBorrowMoney","dayReturnMoney")

@@ -5,6 +5,7 @@ import common.Tool._
   */
 object Main {
   def main(args: Array[String]) {
+    PaiPaiUser.updateUsers
     run(PaiPaiLoans.collectLoan)
     PaiPaiUser.collectUser
   }

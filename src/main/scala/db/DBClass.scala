@@ -167,6 +167,19 @@ class Bid(val id:Int=0,
           @(ApiModelProperty @field)(value = "创建时间", required = true)
           val createTime: Date = new Date(System.currentTimeMillis())) extends BaseDBEntity[Bid]("Bid")
 
+@ApiModel(value = "Borrow",description = "借款记录")
+class Borrow(val id:Int=0,
+          @(ApiModelProperty @field)(value = "用户", required = true,reference = "User")
+          val uid:Int=0,
+          @(ApiModelProperty @field)(value = "id", required = true)
+          val lid:Int=0,
+          @(ApiModelProperty @field)(value = "金额", required = true)
+          val money:Int=0,
+          @(ApiModelProperty @field)(value = "满标时间", required = true)
+          val fullTime: Date =null,
+          @(ApiModelProperty @field)(value = "创建时间", required = true)
+          val createTime: Date = new Date(System.currentTimeMillis())) extends BaseDBEntity[Borrow]("Borrow")
+
 @ApiModel(value = "Loan",description = "借款信息")
 class Loan(val id:Int=0,
            @(ApiModelProperty @field)(value = "标题", required = true)
