@@ -3,6 +3,7 @@ package main
 import java.util.Date
 
 import com.typesafe.config.ConfigFactory
+import common.TimeTool
 import common.Tool._
 import db._
 import org.apache.http.client.CookieStore
@@ -179,7 +180,20 @@ object PaiPaiUser {
     val canBorrowMoneyHtml=canBorrowhtml.select(".my-ac-balanceNum")
     val canBorrowMoney=canBorrowMoneyHtml.text().replace(",","").toBigDecimal
     val dayReturnHtml=Jsoup.parse(NetTool.HttpGet("http://loan.ppdai.com/account/repaymentlist",cookie)._2)
-    //TODO 记录贷款业务
+    //记录贷款业务
+    val borrows=new Borrow().query("uid=?",uid).map(_.lid).toSet
+    dayReturnHtml.select(".repaypublist").asScala.map{tab=>
+        val allMoney=tab.select(".moneyCount").text().drop(1).replaceAll(",","").toBigDecimal
+      val dayMoney=tab.select(".moneyCurrent").text().drop(1).replaceAll(",","").toBigDecimal
+      val info=tab.select(".letterspacing").text()
+      val date=tab.select(".info").asScala.head.text()
+      val lid=tab.select(".repaymentBtn").asScala.head.attr("href").split("/").last
+      if(!borrows.contains(lid.toInt)) {
+        new Borrow(0, uid, lid.toInt, dayMoney, allMoney, TimeTool.parseStringToDate(date), info, new Date()).insert()
+      }else{
+        new Borrow(0, uid, lid.toInt, dayMoney, allMoney, TimeTool.parseStringToDate(date), info, new Date()).update("lid","money","info","returnDate")
+      }
+    }
 
 //    new Borrow(0,uid,"",amount.toInt,null,new Date()).insert()
 

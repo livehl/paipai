@@ -30,7 +30,7 @@ object PaiPaiBorrow {
     val body=new StringEntity(s"""{"Type":6,"ListAmount":"${amount}","Months":"12","Rate":"8.01","Description":"一定要标准的十个字么","BorrowCredit":13,"UseService":false,"UseFenQi":false}""",ContentType.APPLICATION_JSON)
     val (_,ret)=NetTool.HttpPost("http://loan.ppdai.com/Json/SyncReply/CreateList",cookie.get.asInstanceOf[CookieStore],appendHead = Map("Content-Type"->"application/json"),entity = body)
     //记录贷款业务
-    new Borrow(0,uid,0,amount.toInt,null,new Date()).insert()
+    //new Borrow(0,uid,0,amount.toInt,null,new Date()).insert()
     ret.contains("发布成功")
   }
 

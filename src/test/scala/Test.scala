@@ -1,4 +1,5 @@
 import java.io.{File, FileInputStream}
+import java.util.Date
 
 import common.OtsCache
 import main.PaiPaiLoans
@@ -19,13 +20,14 @@ object Test {
   def main(array: Array[String]): Unit = {
 //    OtsCache.setCache("nimei","你妹".getBytes)
 //    println(new String(OtsCache.getCache("nimei").get))
-    val all=OtsCache.getAll
-    all.foreach{d=>
-      d.getColumns
-      println(d.getPrimaryKey.getPrimaryKeyColumns.head.getValue.asString())
-
-    }
-    println(all.size)
+//    val all=OtsCache.getAll
+//    all.foreach{d=>
+//      d.getColumns
+//      println(d.getPrimaryKey.getPrimaryKeyColumns.head.getValue.asString())
+//
+//    }
+//    println(all.size)
+    println(new Borrow(returnDate = new Date()).createTable())
 //    val data=File2Byte(new File("z:\\Image.gif"))
 //      println(Image.getImageCode(data))
 //    val lid="20661086"

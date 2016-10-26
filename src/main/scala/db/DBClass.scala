@@ -174,9 +174,13 @@ class Borrow(val id:Int=0,
           @(ApiModelProperty @field)(value = "id", required = true)
           val lid:Int=0,
           @(ApiModelProperty @field)(value = "金额", required = true)
-          val money:Int=0,
-          @(ApiModelProperty @field)(value = "满标时间", required = true)
-          val fullTime: Date =null,
+          val money:BigDecimal=BigDecimal(0),
+          @(ApiModelProperty @field)(value = "借款金额", required = true)
+          val allMoney:BigDecimal=BigDecimal(0),
+          @(ApiModelProperty @field)(value = "还款时间", required = true)
+          val returnDate: Date =null,
+          @(ApiModelProperty @field)(value = "信息", required = true)
+          val info:String="",
           @(ApiModelProperty @field)(value = "创建时间", required = true)
           val createTime: Date = new Date(System.currentTimeMillis())) extends BaseDBEntity[Borrow]("Borrow")
 
