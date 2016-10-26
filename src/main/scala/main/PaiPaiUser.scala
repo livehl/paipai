@@ -194,9 +194,6 @@ object PaiPaiUser {
         new Borrow(0, uid, lid.toInt, dayMoney, allMoney, TimeTool.parseStringToDate(date), info, new Date()).update("lid","money","info","returnDate")
       }
     }
-
-//    new Borrow(0,uid,"",amount.toInt,null,new Date()).insert()
-
     val returnList=dayReturnHtml.select(".repaypublist tr").asScala.filter(v=> v.select(".info").size()>0 &&v.select(".info").first().text().toDate.before(new Date()))
     val dayReturnMoney=returnList.map(_.select(".moneyCurrent").text().drop(1).toBigDecimal).sum
     new UserAccount(uid=uid,allBorrowMoney=allBorrowMoney,canBorrowMoney=canBorrowMoney,dayReturnMoney = dayReturnMoney).update("uid","allBorrowMoney","canBorrowMoney","dayReturnMoney")
