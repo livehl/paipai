@@ -83,11 +83,11 @@ object PaiPaiUser {
       def bid(user: UserAccount,cookie: CookieStore){
         val (allMoney,account)=updateUserAccount(v.uid,cookie)
         println(v.userName.decrypt()+":"+account)
-        if(account>= BigDecimal(50)){
+        if((account - user.dayReturnMoney) >= BigDecimal(50)){
           // 触发投标业务
           val amount=if(account>=BigDecimal(100)) BigDecimal(50) else account
           val hasBid=PaiPaiBid.bid(v.uid,amount)
-          if(account>=BigDecimal(100) &&hasBid){ //循环投标
+          if((account - user.dayReturnMoney)>=BigDecimal(100) &&hasBid){ //循环投标
             bid(user,cookie)
           }else{
             updateUserAccount(v.uid,cookie)
@@ -117,7 +117,7 @@ object PaiPaiUser {
       println(v.userName.decrypt())
       val ck=cacheMethodString("user_cookie_"+v.uid,3600*24){login(v.userName.decrypt(),v.passWord.decrypt())}
       val (_,canBorrowMoney,_)=updateUserBorrowAccount(v.uid,ck)
-      if(canBorrowMoney>1000){
+      if(canBorrowMoney>10000){
          PaiPaiBorrow.borrow(v.uid,10000)
       }
       Thread.sleep(1000)
@@ -131,13 +131,13 @@ object PaiPaiUser {
     users.foreach { v =>
       println(v.userName.decrypt())
       val ck=cacheMethodString("user_cookie_"+v.uid,3600*24){login(v.userName.decrypt(),v.passWord.decrypt())}
-      var money=v.money
+      var money=v.money - v.dayReturnMoney
       def bid(user: UserAccount,cookie: CookieStore){
         println(v.userName.decrypt()+":quick:"+money)
         if(money>= BigDecimal(200)){
           // 触发投标业务
           val hasBid=PaiPaiBid.quickBid(v.uid,50)
-          if(v.money>=BigDecimal(100) &&hasBid){ //循环投标
+          if(v.money - v.dayReturnMoney >=BigDecimal(100) &&hasBid){ //循环投标
             money -= BigDecimal(50)
             bid(user,cookie)
           }else{
