@@ -3,7 +3,7 @@ import NativePackagerHelper._
 
 name := "paipai"
 
-version := "1.5.0"
+version := "1.5.1"
 
 scalaVersion := "2.11.7"
 
@@ -32,6 +32,12 @@ val root = (project in file(".")).enablePlugins(DockerPlugin).enablePlugins(Java
 
 doc in Compile <<= target.map(_ / "none")
 
+
+javaOptions in Universal ++= Seq(
+  " -Dfile.encoding=utf-8"
+)
+
+
 mainClass in Compile := Some("main.Main")
 
 dockerCommands :=Seq(
@@ -45,4 +51,4 @@ packageName in Docker := packageName.value
 
 dockerUpdateLatest  in Docker := true
 
-dockerRepository :=Some("registry.aliyuncs.com/zx")
+dockerRepository :=Some("registry.cn-hangzhou.aliyuncs.com/cdhub")
