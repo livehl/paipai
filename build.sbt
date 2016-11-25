@@ -8,6 +8,7 @@ version := "1.5.2"
 scalaVersion := "2.11.7"
 
 libraryDependencies ++= Seq(
+  "com.typesafe.akka" %% "akka-actor" % "2.4.14",
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
   "org.apache.httpcomponents" % "httpmime" % "4.3.5",
   "org.apache.httpcomponents" % "httpclient" % "4.3.5",

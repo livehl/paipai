@@ -139,6 +139,15 @@ class BDBEntity(val tableName: String){
   }
 
   def insert(fields: String*) = {
+    val request = new PutRowRequest()
+    request.setRowChange(getInstallRowChange(fields:_*))
+    reTry(3) {
+      val result = BDBEntity.client.putRow(request)
+      result.getConsumedCapacity().getCapacityUnit().getWriteCapacityUnit()
+    }
+  }
+
+  private def getInstallRowChange(fields: String*)={
     val rowChange = new RowPutChange(tableName)
     val primaryKey = PrimaryKeyBuilder.createPrimaryKeyBuilder()
     val idValue = getBDBKeyFiledValue("id")
@@ -150,12 +159,7 @@ class BDBEntity(val tableName: String){
       if (v != null) rowChange.addColumn(k, v)
     }
     rowChange.setCondition(new Condition(RowExistenceExpectation.IGNORE))
-    val request = new PutRowRequest()
-    request.setRowChange(rowChange)
-    reTry(3) {
-      val result = BDBEntity.client.putRow(request)
-      result.getConsumedCapacity().getCapacityUnit().getWriteCapacityUnit()
-    }
+    rowChange
   }
 
   def insertUpdate(updateField: String, fields: String*) {
@@ -327,6 +331,14 @@ object BDBEntity {
       case d: Boolean => !bean.asInstanceOf[Boolean]
       case b: BigDecimal => b == null || b.asInstanceOf[BigDecimal] == -1
       case _ => bean == null
+    }
+  }
+  def insertBatch[T <: BDBEntity](data:List[T])={
+    val request = new BatchWriteRowRequest()
+    data.foreach(d=>request.addRowChange(d.getInstallRowChange()))
+    reTry(3) {
+      val result = client.batchWriteRow(request)
+      result.getRowStatus
     }
   }
 }
