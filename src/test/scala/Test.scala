@@ -18,6 +18,8 @@ object Test {
 
 
   def main(array: Array[String]): Unit = {
+//    val l=new LoanData().queryById("683054")
+//    System.exit(0)
 //    OtsCache.setCache("nimei","你妹".getBytes)
 //    println(new String(OtsCache.getCache("nimei").get))
 //    val all=OtsCache.getAll
@@ -27,7 +29,7 @@ object Test {
 //
 //    }
 //    println(all.size)
-    println(new Borrow(returnDate = new Date()).createTable())
+//    println(new Borrow(returnDate = new Date()).createTable())
 //    val data=File2Byte(new File("z:\\Image.gif"))
 //      println(Image.getImageCode(data))
 //    val lid="20661086"

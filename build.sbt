@@ -3,7 +3,7 @@ import NativePackagerHelper._
 
 name := "paipai"
 
-version := "1.5.1"
+version := "1.5.2"
 
 scalaVersion := "2.11.7"
 
@@ -22,6 +22,7 @@ libraryDependencies ++= Seq(
   "net.jpountz.lz4" % "lz4" % "1.3.0",
   "com.typesafe" % "config" % "1.3.0",
   "io.swagger" % "swagger-annotations" % "1.5.6",
+  "com.aliyun.oss" % "aliyun-sdk-oss" % "2.4.0",
   "com.aliyun.openservices" % "tablestore" % "4.1.0"
 )
 

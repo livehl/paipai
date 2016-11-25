@@ -79,7 +79,7 @@ class CacheData(val value:AnyRef,val time:Long,val z4z:Boolean)extends  Serializ
 
 object OtsCache {
   lazy val conf = ConfigFactory.load()
-  private lazy val client = new SyncClient(conf.getString("ots.url"), conf.getString("ots.accessId"), conf.getString("ots.accessKey"), conf.getString("ots.instanceName"))
+  private lazy val client = new SyncClient(conf.getString("ots.url"), conf.getString("ali.accessId"), conf.getString("ali.accessKey"), conf.getString("ots.instanceName"))
   private val cacheTableName=conf.getString("ots.table")
   private val useZ4z=conf.getBoolean("ots.z4z")
   checkTable

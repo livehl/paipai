@@ -2,9 +2,9 @@ package main
 
 import java.util.Date
 
-import common.{Cache, OtsCache}
+import common.{Aliyun, Cache, OtsCache}
 import common.Tool._
-import db._
+import db.{LoanData, _}
 import org.apache.http.client.CookieStore
 import tools.NetTool
 
@@ -23,7 +23,7 @@ object PaiPaiBid {
     */
   def bid(uid:Int,amount:BigDecimal)={
     val loans=cacheMethodString("bidLoans",60* 10) {
-      PaiPaiLoans.catchPage(100, true).filter { v =>
+      PaiPaiLoans.catchPage(10, true).filter { v =>
 //        v.Title.contains("次") && !v.Title.contains("第1次") && !v.Title.contains("首次") &&
           v.Rate >= 20
       }.sortBy(_.Rate * -1)
@@ -59,9 +59,9 @@ object PaiPaiBid {
     val notBid=new Bid().query("uid=? and lid=?",uid,lid).size == 0
     if(!notBid) return false
     //审核逾期信息
-    val cacheData=OtsCache.getCache[String](lid)
-    println(if(cacheData.isEmpty) "use db" else "use cache")
-    val fullData=if(cacheData.isDefined) cacheData else new LoanText().queryOne("ListingId=?",lid).map(_.text)
+    val cacheData=new LoanData().queryById(lid)
+    println(if(cacheData.isDefined) "use nosql" else "use file")
+    val fullData=if(cacheData.isDefined) cacheData.map(_.text) else  Aliyun.getFile("loan/"+lid).map(v=> new String(v,"utf-8"))
     if(fullData.isEmpty) return false
     val cutStart=fullData.get.indexOf("<p>正常还清")
     if(cutStart < 0) return false

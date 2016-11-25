@@ -143,6 +143,7 @@ object Tool {
           retryCount += 1
           Thread.sleep(100*retryCount)
           if (retryCount > count) {
+            e.printStackTrace()
             throw e
           }
       }

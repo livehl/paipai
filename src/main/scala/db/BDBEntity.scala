@@ -11,10 +11,11 @@ import tools.Z4ZTool._
 
 import scala.collection.JavaConversions._
 
+/**
+  * nosql 数据库引擎
+  * @param tableName
+  */
 class BDBEntity(val tableName: String){
-  private lazy val conf = ConfigFactory.load()
-  private lazy val client = new SyncClient(conf.getString("ots.url"), conf.getString("ots.accessId"), conf.getString("ots.accessKey"), conf.getString("ots.instanceName"))
-  private val useZ4z=conf.getBoolean("ots.z4z")
   private lazy val created = getConstructorParamNames(this.getClass())
   private lazy val methods = this.getClass().getMethods() filter {
     m => !m.getName().contains("_") && m.getParameterTypes().length == 0
@@ -33,7 +34,7 @@ class BDBEntity(val tableName: String){
       case d: java.lang.Double => ColumnValue.fromDouble(d)
       case f: java.lang.Float => ColumnValue.fromDouble(f.toDouble)
       case l: java.lang.Long => ColumnValue.fromLong(l)
-      case s: String => ColumnValue.fromString(s)
+      case s: String => if(BDBEntity.useZ4z) ColumnValue.fromBinary(s.z4z) else ColumnValue.fromString(s)
       case d: Date => ColumnValue.fromLong(d.getTime)
       case bd: BigDecimal => ColumnValue.fromDouble(bd.toDouble)
       case b: Array[Byte] => ColumnValue.fromBinary(b)
@@ -89,18 +90,24 @@ class BDBEntity(val tableName: String){
    */
   def createTable() {
     val tableMeta = new TableMeta(tableName)
-    tableMeta.addPrimaryKeyColumn("id", PrimaryKeyType.INTEGER)
+    val primaryKeyType=getFiledValue("id") match{
+      case _:String=>PrimaryKeyType.STRING
+      case _:java.lang.Long=>PrimaryKeyType.INTEGER
+      case _:java.lang.Integer=>PrimaryKeyType.INTEGER
+      case _:Any=> throw new VenusException("不支持的id类型")
+    }
+    tableMeta.addPrimaryKeyColumn("id",primaryKeyType)
     // 将该表的读写CU都设置为100
-    val ttl=if(conf.hasPath("cache.ots.ttl")) conf.getInt("cache.ots.ttl") else -1
+    val ttl=if(BDBEntity.conf.hasPath("ots.ttl")) BDBEntity.conf.getInt("ots.ttl") else -1
     val request = new CreateTableRequest(tableMeta, new TableOptions(ttl, 1))
     request.setTableMeta(tableMeta)
     request.setReservedThroughput(new ReservedThroughput(0, 0))
-    client.createTable(request)
+    BDBEntity.client.createTable(request)
   }
 
   def deleteTable() {
     val request = new DeleteTableRequest(tableName)
-    client.deleteTable(request)
+    BDBEntity.client.deleteTable(request)
   }
 
   def update(where: String, fields: String*) = {
@@ -120,7 +127,7 @@ class BDBEntity(val tableName: String){
     val request = new UpdateRowRequest()
     request.setRowChange(rowChange)
     reTry(5){
-      val result = client.updateRow(request)
+      val result = BDBEntity.client.updateRow(request)
       result.getConsumedCapacity.getCapacityUnit.getWriteCapacityUnit
     }
   }
@@ -146,7 +153,7 @@ class BDBEntity(val tableName: String){
     val request = new PutRowRequest()
     request.setRowChange(rowChange)
     reTry(3) {
-      val result = client.putRow(request)
+      val result = BDBEntity.client.putRow(request)
       result.getConsumedCapacity().getCapacityUnit().getWriteCapacityUnit()
     }
   }
@@ -165,7 +172,7 @@ class BDBEntity(val tableName: String){
     rowChange.setCondition(new Condition(RowExistenceExpectation.IGNORE))
     val request = new UpdateRowRequest()
     request.setRowChange(rowChange)
-    val result = client.updateRow(request)
+    val result = BDBEntity.client.updateRow(request)
     result.getConsumedCapacity().getCapacityUnit().getWriteCapacityUnit()
   }
 
@@ -178,7 +185,7 @@ class BDBEntity(val tableName: String){
     rowChange.setPrimaryKey(primaryKeys.build())
     val request = new DeleteRowRequest()
     request.setRowChange(rowChange)
-    val result = client.deleteRow(request)
+    val result = BDBEntity.client.deleteRow(request)
     result.getConsumedCapacity().getCapacityUnit().getWriteCapacityUnit()
   }
 
@@ -186,22 +193,22 @@ class BDBEntity(val tableName: String){
     val criteria = new SingleRowQueryCriteria(tableName)
     val primaryKeys =PrimaryKeyBuilder.createPrimaryKeyBuilder()
     val idValue = getBDBKeyValue(id)
-//    if (idValue == null) throw new EmptyFieldExcepiton
     primaryKeys.addPrimaryKeyColumn("id", idValue)
     criteria.setPrimaryKey(primaryKeys.build())
-    if(fields.size>0)criteria.addColumnsToGet(fields.toArray)
+    criteria.addColumnsToGet(getFieldKeys(fields:_*).filter(_ != "tableName").filter(_ != "id"))
+    criteria.setMaxVersions(1)
 
     val request = new GetRowRequest()
     request.setRowQueryCriteria(criteria)
     var value:Option[_ <: BDBEntity]=None
     Tool.reTry(3) {
-      val result = client.getRow(request)
+      val result = BDBEntity.client.getRow(request)
       val row = result.getRow()
-      if (result.getRow.getColumns.isEmpty)
+      if (row.getColumns.isEmpty)
         value=None
       else {
         val columns=row.getColumns.map(v=> v.getName->v.getValue).toMap
-        val dataMap = getFieldKeys(fields: _*).toList.map(k => k -> getColData(columns(k))).toMap + ("id" ->id)
+        val dataMap = getFieldKeys(fields: _*).filter(_ != "tableName").filter(_ != "id").toList.map(k => k -> getColData(columns(k))).toMap + ("id" ->id)
         value=Some(BDBEntity.apply(this.getClass(), dataMap))
       }
     }
@@ -224,17 +231,18 @@ class BDBEntity(val tableName: String){
     val tableRows = new MultiRowQueryCriteria(tableName)
     ids.foreach { i =>
       val primaryKeys =PrimaryKeyBuilder.createPrimaryKeyBuilder()
-      primaryKeys.addPrimaryKeyColumn(idName,
+        primaryKeys.addPrimaryKeyColumn(idName,
         PrimaryKeyValue.fromLong(i))
       tableRows.addRow(primaryKeys.build())
     }
-    if(fields.size>0)tableRows.addColumnsToGet(fields.toArray)
+    tableRows.addColumnsToGet(getFieldKeys(fields:_*))
+    tableRows.setMaxVersions(1)
     request.addMultiRowQueryCriteria(tableRows)
-    val result = client.batchGetRow(request)
+    val result = BDBEntity.client.batchGetRow(request)
     val status = result.getTableToRowsResult
     status.values().map(v => v.filter(_.isSucceed)).flatten.map { v =>
       val columns=v.getRow.getColumns.map(c=> c.getName->c.getValue).toMap
-      val dataMap = getFieldKeys(fields: _*).toList.map(k => k ->getColData(columns(k))).toMap + (idName -> getColData(columns(idName)))
+      val dataMap = getFieldKeys(fields: _*).filter(_ != "tableName").filter(_ != "id").toList.map(k => k ->getColData(columns(k))).toMap + (idName -> getColData(columns(idName)))
       BDBEntity.apply(this.getClass(), dataMap)
     } toList
   }
@@ -252,9 +260,10 @@ class BDBEntity(val tableName: String){
     // 范围的边界需要提供完整的PK，若查询的范围不涉及到某一列值的范围，则需要将该列设置为无穷大或者无穷小
     criteria.setInclusiveStartPrimaryKey(inclusiveStartKey.build())
     criteria.setExclusiveEndPrimaryKey(exclusiveEndKey.build())
+    criteria.setMaxVersions(1)
     val request = new GetRangeRequest()
     request.setRangeRowQueryCriteria(criteria)
-    val result = client.getRange(request)
+    val result = BDBEntity.client.getRange(request)
     val rows = result.getRows()
     rows.map { v =>
       val columns=v.getColumns.map(v=> v.getName->v.getValue).toMap
@@ -276,6 +285,9 @@ class BDBEntity(val tableName: String){
 }
 
 object BDBEntity {
+  private lazy val conf = ConfigFactory.load()
+  private lazy val client = new SyncClient(conf.getString("ots.url"), conf.getString("ali.accessId"), conf.getString("ali.accessKey"), conf.getString("ots.instanceName"))
+  private val useZ4z=conf.getBoolean("ots.z4z")
   /*从map 构造一个实例*/
   def apply[T](clazz: Class[_ <: T], map: Map[String, Object]): T = {
     val created = getConstructorParamNames(clazz).maxBy(_._2.length)
@@ -288,11 +300,13 @@ object BDBEntity {
         } else {
           t.getName match {
             case "java.sql.Date" => if (value == null) null else new java.sql.Date(value.asInstanceOf[java.util.Date].getTime())
+            case "java.util.Date" => if (value == null) null else  new Date(value.asInstanceOf[Long])
             case "java.sql.Time" => if (value == null) null else new java.sql.Time(value.asInstanceOf[java.util.Date].getTime())
             case "java.sql.Timestamp" => if (value == null) null else new java.sql.Timestamp(value.asInstanceOf[java.util.Date].getTime())
-            case "java.lang.String" => if (value == null) null else value.asInstanceOf[String]
+            case "java.lang.String" => if (value == null) null else if(value.isInstanceOf[Array[Byte]]) value.asInstanceOf[Array[Byte]].unz4zStr else value.asInstanceOf[String]
             case "scala.math.BigDecimal" => if (value == null) null else BigDecimal(value.toString)
             case "boolean" => if (value == null) null else if (value.isInstanceOf[Boolean]) value else Boolean.box(value.asInstanceOf[Int] == 1)
+            case "int"=>value.toString.toInt.asInstanceOf[Integer]
             case _ => value
           }
         }
