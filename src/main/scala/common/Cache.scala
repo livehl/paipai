@@ -94,7 +94,6 @@ object OtsCache {
       //默认保存10年
       val ttl=if(conf.hasPath("cache.ots.ttl")) conf.getInt("cache.ots.ttl") else 3600*24*3650
       val request = new CreateTableRequest(tableMeta, new TableOptions(ttl, 1))
-      request.setTableMeta(tableMeta)
       request.setReservedThroughput(new ReservedThroughput(0, 0))
       client.createTable(request)
     }
