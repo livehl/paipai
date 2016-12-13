@@ -139,6 +139,29 @@ object OtsCache {
     }
     value
   }
+  def getCaches[T](keys: String*):Map[String,T] = {
+    val criteria = new MultiRowQueryCriteria(cacheTableName)
+    keys.foreach(key=> criteria.addRow(PrimaryKeyBuilder.createPrimaryKeyBuilder().addPrimaryKeyColumn("key", PrimaryKeyValue.fromString(key)).build()))
+    criteria.setMaxVersions(1)
+    val request = new BatchGetRowRequest()
+    request.addMultiRowQueryCriteria(criteria)
+    var value:Map[String,T]=Map[String,T]()
+    Tool.reTry(3) {
+      val result = client.batchGetRow(request)
+      value=result.getSucceedRows.map{row=>
+        if ( !row.isSucceed){
+          val dataMap = ("value"::"z4z"::Nil).map(k => k -> getColData(row.getRow.getColumn(k).map(_.getValue).head)).toMap
+          val hasZ4z=dataMap.getOrElse("z4z",false).asInstanceOf[Boolean]
+          val data=if(hasZ4z) dataMap("value").asInstanceOf[Array[Byte]].unz4z else dataMap("value").asInstanceOf[Array[Byte]]
+          val obj=ReflectTool.getObjectByBytes(data)
+          if(obj.isInstanceOf[T]){
+            Some(row.getRow.getPrimaryKey.getPrimaryKeyColumns.head.getValue.asString() -> obj.asInstanceOf[T])
+          }else None
+        } else None
+      }.filter(_.isDefined).map(_.get).toMap
+    }
+    value
+  }
   def delCache(key: String) = {
     val rowChange = new RowDeleteChange(cacheTableName)
     val primaryKey = PrimaryKeyBuilder.createPrimaryKeyBuilder().addPrimaryKeyColumn("key", PrimaryKeyValue.fromString(key)).build()
@@ -147,6 +170,17 @@ object OtsCache {
     request.setRowChange(rowChange)
     val result = client.deleteRow(request)
     result.getConsumedCapacity().getCapacityUnit().getWriteCapacityUnit()
+  }
+  def delCaches(keys: List[String]) = {
+    val request = new BatchWriteRowRequest()
+    keys.foreach{key=>
+      val rowChange = new RowDeleteChange(cacheTableName)
+      val primaryKey = PrimaryKeyBuilder.createPrimaryKeyBuilder().addPrimaryKeyColumn("key", PrimaryKeyValue.fromString(key)).build()
+      rowChange.setPrimaryKey(primaryKey)
+      request.addRowChange(rowChange)
+    }
+    val result = client.batchWriteRow(request)
+    result.getRowStatus
   }
 
   /**

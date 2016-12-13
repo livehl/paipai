@@ -63,10 +63,14 @@ object PaiPaiBid {
     println(if(cacheData.isDefined) "use nosql" else "use file")
     val fullData=if(cacheData.isDefined) cacheData.map(_.text) else  Aliyun.getFile("loan/"+lid).map(v=> new String(v,"utf-8"))
     if(fullData.isEmpty) return false
-    val cutStart=fullData.get.indexOf("<p>正常还清")
-    if(cutStart < 0) return false
-    val txt=fullData.get.substring(cutStart+3,fullData.get.indexOf("</p>",cutStart))
-    val List(count,yu,hei)=txt.split("，").map(v=> v.split("：").last.trim.dropRight(1).trim.toInt).toList
+    val html=fullData.get
+    val start=html.indexOf("正常还清次数")
+    if(start < 0) return false
+    def getExpNum(exp:String)={
+      val cutStart=html.indexOf(exp)
+      html.substring(cutStart+exp.length+1,html.indexOf("</p>",cutStart)).replace("""<span class="num">""","").replace("</span>","").replace("次","").trim()
+    }
+    val List(count,yu,hei)=List("正常还清次数","逾期(0-15天)还清次数","逾期(15天以上)还清次数").map(v=>getExpNum(v).toInt)
     //没有成功还款过或者有过逾期15天的记录或者逾期次数大于借款数的1/10
     if(count==0 || hei>0 || yu> (count/10)) return false
     val cookie=Cache.getCache("user_cookie_"+uid)
