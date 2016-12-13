@@ -40,7 +40,7 @@ javaOptions in Universal ++= Seq(
 )
 
 
-mainClass in Compile := Some("main.DataSave")
+mainClass in Compile := Some("main.Main")
 
 dockerCommands :=Seq(
   Cmd("FROM","livehl/java8"),
