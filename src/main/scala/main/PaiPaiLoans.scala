@@ -69,7 +69,7 @@ object PaiPaiLoans {
         return buffer.toList
       }
       println(new Date().sdatetime + s" catch page:${i},${if(fast)"fast" else ""}")
-      Thread.sleep(if(fast)100 else 1000)
+      Thread.sleep(if(fast)500 else 1000)
     }
     println(new Date().sdatetime +s" catch page end:${if(fast)"fast" else ""}")
     insertLoans(buffer.toList)
@@ -89,6 +89,7 @@ object PaiPaiLoans {
       }else{
         val id=loan.insert()
         loanInfo(loan.ListingId,loan.Title)
+        Thread.sleep(1000)
       }
     }
 
