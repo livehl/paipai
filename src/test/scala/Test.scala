@@ -18,27 +18,28 @@ object Test {
 
 
   def main(array: Array[String]): Unit = {
-    val html="""<p class="tab-hd"><span></span>借款记录</p>
-               |                    <div class="flex wid720">
-               |                        <p class="ex col-1">注册时间：2016/12/7 </p>
-               |                        <p class="ex col-2 center">历史记录: <span class="num">0</span>次流标，<span class="num">0</span>次撤标，<span class="num">0</span>次失败</p>
-               |                        <p class="ex col-1 center last">成功借款次数：<span class="num">0</span>次</p>
-               |                    </div>
-               |                    <p class="tab-hd" style="margin-top: 10px;"><span></span>还款相关</p>
-               |                    <div class="flex">
-               |                        <p class="ex col-1" style="max-width:158px">成功还款次数: <span class="num">0</span>次</p>
-               |                        <p class="ex col-1 center">正常还清次数: <span class="num">0</span>次</p>
-               |                        <p class="ex col-1 center">逾期(0-15天)还清次数: <span class="num">0</span>次</p>
-               |                        <p class="ex col-1 center last">逾期(15天以上)还清次数：<span class="num">0</span>次</p>
-               |                    </div>
-               |""".stripMargin
-    val start=html.indexOf("正常还清次数")
-    if(start < 0) return false
-    def getExpNum(exp:String)={
-      val cutStart=html.indexOf(exp)
-      html.substring(cutStart+exp.length+1,html.indexOf("</p>",cutStart)).replace("""<span class="num">""","").replace("</span>","").replace("次","").trim()
-    }
-    val List(count,yu,hei)=List("正常还清次数","逾期(0-15天)还清次数","逾期(15天以上)还清次数").map(v=>getExpNum(v).toInt)
+    println("1d".dateExp.sdatetime)
+//    val html="""<p class="tab-hd"><span></span>借款记录</p>
+//               |                    <div class="flex wid720">
+//               |                        <p class="ex col-1">注册时间：2016/12/7 </p>
+//               |                        <p class="ex col-2 center">历史记录: <span class="num">0</span>次流标，<span class="num">0</span>次撤标，<span class="num">0</span>次失败</p>
+//               |                        <p class="ex col-1 center last">成功借款次数：<span class="num">0</span>次</p>
+//               |                    </div>
+//               |                    <p class="tab-hd" style="margin-top: 10px;"><span></span>还款相关</p>
+//               |                    <div class="flex">
+//               |                        <p class="ex col-1" style="max-width:158px">成功还款次数: <span class="num">0</span>次</p>
+//               |                        <p class="ex col-1 center">正常还清次数: <span class="num">0</span>次</p>
+//               |                        <p class="ex col-1 center">逾期(0-15天)还清次数: <span class="num">0</span>次</p>
+//               |                        <p class="ex col-1 center last">逾期(15天以上)还清次数：<span class="num">0</span>次</p>
+//               |                    </div>
+//               |""".stripMargin
+//    val start=html.indexOf("正常还清次数")
+//    if(start < 0) return false
+//    def getExpNum(exp:String)={
+//      val cutStart=html.indexOf(exp)
+//      html.substring(cutStart+exp.length+1,html.indexOf("</p>",cutStart)).replace("""<span class="num">""","").replace("</span>","").replace("次","").trim()
+//    }
+//    val List(count,yu,hei)=List("正常还清次数","逾期(0-15天)还清次数","逾期(15天以上)还清次数").map(v=>getExpNum(v).toInt)
 //    val l=new LoanData().queryById("683054")
 //    System.exit(0)
 //    OtsCache.setCache("nimei","你妹".getBytes)
