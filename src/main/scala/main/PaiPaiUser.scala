@@ -197,6 +197,17 @@ object PaiPaiUser {
     }
     val returnList=dayReturnHtml.select(".repaypublist tr").asScala.filter(v=> v.select(".info").size()>0 &&v.select(".info").first().text().toDate.before("1d".dateExp))
     val dayReturnMoney=returnList.map(_.select(".moneyCurrent").text().drop(1).toBigDecimal).sum
+    //还钱
+    var hasMoney=new UserAccount().queryById(uid).dbCheck.money
+    dayReturnHtml.select(".repaypublist tr").asScala.filter(v=> v.select(".info").size()>0 &&v.select(".info").first().text().toDate.before(new Date())).foreach{tr=>
+        val rmoney= tr.select(".moneyCurrent").text().drop(1).toBigDecimal
+        if(rmoney <= hasMoney){
+          val ret=PaiPaiBorrow.repayment(uid,tr.select(".repaymentBtn").attr("href").split("/").last)
+           if(ret){
+             hasMoney= hasMoney - rmoney
+           }
+        }
+    }
     new UserAccount(uid=uid,allBorrowMoney=allBorrowMoney,canBorrowMoney=canBorrowMoney,dayReturnMoney = dayReturnMoney).update("uid","allBorrowMoney","canBorrowMoney","dayReturnMoney")
     (allBorrowMoney,canBorrowMoney,dayReturnMoney)
   }
