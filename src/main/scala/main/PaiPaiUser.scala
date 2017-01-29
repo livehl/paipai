@@ -22,8 +22,9 @@ object PaiPaiUser {
   def main(args: Array[String]) {
 //    checkUsers
 //    checkBorrowUsers
-    val cookie=cacheOTS("testLogin"){login("livehl@126.com","hl890218")}
-    val (allMoney,_,account)=updateUserBorrowAccount(1,cookie)
+    updateUsers
+//    val cookie=cacheOTS("testLogin"){login("livehl@126.com","hl890218")}
+//    val (allMoney,_,account)=updateUserBorrowAccount(1,cookie)
 //    println(account)
     checkUsers
     System.exit(0)

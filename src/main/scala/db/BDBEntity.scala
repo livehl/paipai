@@ -208,7 +208,7 @@ class BDBEntity(val tableName: String){
     Tool.reTry(3) {
       val result = BDBEntity.client.getRow(request)
       val row = result.getRow()
-      if (row.getColumns.isEmpty)
+      if (row ==null || row.getColumns.isEmpty)
         value=None
       else {
         val columns=row.getColumns.map(v=> v.getName->v.getValue).toMap
