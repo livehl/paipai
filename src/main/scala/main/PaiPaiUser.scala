@@ -136,7 +136,7 @@ object PaiPaiUser {
       var money=v.money - v.dayReturnMoney
       def bid(user: UserAccount,cookie: CookieStore){
         println(v.userName.decrypt()+":quick:"+money)
-        if(money>= BigDecimal(200)){
+        if(money>= BigDecimal(100)){
           // 触发投标业务
           val hasBid=PaiPaiBid.quickBid(v.uid,50)
           if(v.money - v.dayReturnMoney >=BigDecimal(100) &&hasBid){ //循环投标
