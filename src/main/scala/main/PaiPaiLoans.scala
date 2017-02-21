@@ -57,24 +57,29 @@ object PaiPaiLoans {
   def catchPage(page:Int,fast:Boolean=false):List[Loan]={
     val buffer=new ArrayBuffer[Loan]()
     val cookie=PaiPaiUser.getUserCookie
+    var empty=false
     1 to page foreach{i=>
-      val (_,str)=NetTool.HttpPost("http://m.invest.ppdai.com/listing/ajaxindex",cookie,Map("pageIndex"->i.toString))
-      if(!isEmpty(str)) {
-        val lists = toBean(str, classOf[List[Map[String, AnyRef]]]).map(v => new Loan().fromJson(v.toJson))
-        lists.filter(v => if (fast) v.Rate >= 20 else v.Rate >= 18).foreach { loan =>
-          buffer.append(loan)
+      if(!empty) {
+        val (_, str) = NetTool.HttpPost("http://m.invest.ppdai.com/listing/ajaxindex", cookie, Map("pageIndex" -> i.toString))
+        if (!isEmpty(str)) {
+          val lists = toBean(str, classOf[List[Map[String, AnyRef]]]).map(v => new Loan().fromJson(v.toJson))
+          lists.filter(v => if (fast) v.Rate >= 20 else v.Rate >= 18).foreach { loan =>
+            buffer.append(loan)
+          }
+          if (lists.size < 10) {
+            //跳出循环
+            println(new Date().sdatetime + s" catch page end:${if (fast) "fast" else ""}")
+            insertLoans(buffer.toList)
+            return buffer.toList
+          }
+          println(new Date().sdatetime + s" catch page:${i},${if (fast) "fast" else ""}")
+          Thread.sleep(if (fast) 500 else 1000)
+        } else {
+          empty = true
+          println(new Date().sdatetime + s" catch page empty:${i},${if (fast) "fast" else ""}")
+          Thread.sleep(200)
         }
-        if (lists.size < 10) {
-          //跳出循环
-          println(new Date().sdatetime + s" catch page end:${if (fast) "fast" else ""}")
-          insertLoans(buffer.toList)
-          return buffer.toList
-        }
-        println(new Date().sdatetime + s" catch page:${i},${if(fast)"fast" else ""}")
-      }else{
-        println(new Date().sdatetime + s" catch page empty:${i},${if(fast)"fast" else ""}")
       }
-      Thread.sleep(if(fast)500 else 1000)
     }
     println(new Date().sdatetime +s" catch page end:${if(fast)"fast" else ""}")
     insertLoans(buffer.toList)

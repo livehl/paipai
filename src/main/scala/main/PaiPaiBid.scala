@@ -22,15 +22,10 @@ object PaiPaiBid {
     * @return
     */
   def bid(uid:Int,amount:BigDecimal)={
-    val loans=cacheMethodString("bidLoans",60* 10) {
-      PaiPaiLoans.catchPage(10, true).filter { v =>
-//        v.Title.contains("次") && !v.Title.contains("第1次") && !v.Title.contains("首次") &&
-          v.Rate >= 20
-      }.sortBy(_.Rate * -1)
+    val loans=cacheMethodString("bidLoans",29) {
+      PaiPaiLoans.catchPage(10, true).filter(_.Rate >= 20).sortBy(_.Rate * -1)
     }
     loans.foldLeft(false){(ret,loan)=> if(ret) ret else bidLoan(uid,amount.toInt,loan.ListingId,loan.Amount.toInt)}
-//    val loans=new Loan().query(s"createTime > '${new Date().sdate}' and Title LIKE '%次%'  and Title not LIKE '%第1次%' and  Title not LIKE '%首次%'  and Rate >=20 and Funding < 100   order BY Rate desc,CreditCode,Months,Amount desc,Funding  limit 100 ")
-
   }
   /**
     * 快速投标策略
@@ -40,7 +35,7 @@ object PaiPaiBid {
     * @return
     */
   def quickBid(uid:Int,amount:Int)={
-    val loans=cacheMethodString("bidLoans",60) {
+    val loans=cacheMethodString("bidLoans",29) {
       PaiPaiLoans.catchPage(10, true).filter(_.Rate >=20).sortBy(_.Rate * -1)
     }
     loans.foldLeft(false){(ret,loan)=> if(ret) ret else bidLoan(uid,amount,loan.ListingId,loan.Amount.toInt)}
