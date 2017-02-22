@@ -25,7 +25,7 @@ object PaiPaiLoans {
 //    val cookie=login("livehl@126.com","hl890218")
 //    println(cookie)
 //    checkLoans
-    catchPage(20)
+    loanStream
 
   }
 
@@ -41,7 +41,6 @@ object PaiPaiLoans {
         if(i% kv._1 ==0){
           kv._3 match{
             case "check" =>run(checkLoans())
-            case _=>run(catchPage(kv._2))
           }
         }
       }
@@ -49,61 +48,43 @@ object PaiPaiLoans {
     }
   }
 
-  /**
-    * 抓取标的
-    *
-    * @param page
-    */
-  def catchPage(page:Int,fast:Boolean=false):List[Loan]={
-    val buffer=new ArrayBuffer[Loan]()
+  def loanStream(){
     val cookie=PaiPaiUser.getUserCookie
-    var empty=false
-    1 to page foreach{i=>
-      if(!empty) {
-        val (_, str) = NetTool.HttpPost("http://m.invest.ppdai.com/listing/ajaxindex", cookie, Map("pageIndex" -> i.toString))
-        if (!isEmpty(str)) {
-          val lists = toBean(str, classOf[List[Map[String, AnyRef]]]).map(v => new Loan().fromJson(v.toJson))
-          lists.filter(v => if (fast) v.Rate >= 20 else v.Rate >= 18).foreach { loan =>
-            buffer.append(loan)
-          }
-          if (lists.size < 10) {
-            //跳出循环
-            println(new Date().sdatetime + s" catch page end:${if (fast) "fast" else ""}")
-            insertLoans(buffer.toList)
-            return buffer.toList
-          }
-          println(new Date().sdatetime + s" catch page:${i},${if (fast) "fast" else ""}")
-          Thread.sleep(if (fast) 500 else 1000)
-        } else {
-          empty = true
-          println(new Date().sdatetime + s" catch page empty:${i},${if (fast) "fast" else ""}")
-          Thread.sleep(200)
+    var i=1
+    while (true){
+      val (_, str) = NetTool.HttpPost("http://m.invest.ppdai.com/listing/ajaxindex", cookie, Map("pageIndex" -> i.toString))
+      if (!isEmpty(str)) {
+        val lists = toBean(str, classOf[List[Map[String, AnyRef]]]).map(v => new Loan().fromJson(v.toJson))
+        if(System.currentTimeMillis()/1000 % 30==1){
+          println(new Date().sdatetime+"page:"+i+",size:"+lists.size)
         }
+        //流
+        run(loanSaveStream(lists.filter(v => v.Rate >= 18)))
+        if (lists.size < 10) {
+          i=1
+        }else{
+          i+=1
+        }
+      } else {
+        i=1
       }
+      Thread.sleep(1000)
     }
-    println(new Date().sdatetime +s" catch page end:${if(fast)"fast" else ""}")
-    insertLoans(buffer.toList)
-    buffer.toList
   }
 
-  /**
-    * 保存数据到数据库
-    * @param loans
-    */
-  def insertLoans(loans:List[Loan]): Unit ={
-    if(loans.isEmpty) return null
-    val dbLoans=new Loan().query(s"ListingId in (${loans.map(_.ListingId).mkString(",")})")
-    val lidMaps=dbLoans.map(v=> v.ListingId->v).toMap
-    loans.foreach{loan=>
-      if(lidMaps.contains(loan.ListingId)){
-        new Loan(lidMaps(loan.ListingId).id,Funding = loan.Funding,lastUpdate = new Date()).update("id","Funding","lastUpdate")
-      }else{
+  def loanSaveStream(list:List[Loan]){
+    val dbLoans=if(list.isEmpty) (0::Nil).toSet[Int] else  new Loan().query(s"ListingId in (${list.map(_.ListingId).mkString(",")})").map(_.ListingId).toSet[Int]
+      val loans=list.filter(_.Rate>=20).filter(v=> !dbLoans.contains(v.ListingId)).map{loan=>
         val id=loan.insert()
         loanInfo(loan.ListingId,loan.Title)
-        Thread.sleep(1000)
-      }
+        Thread.sleep(200)
+        loan
+      }.sortBy(_.Rate * -1)
+    //流
+    if(loans.size>0) {
+      println("stream loan:" + loans.size)
+      PaiPaiUser.userStream(loans)
     }
-
   }
 
   /**

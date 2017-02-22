@@ -14,31 +14,16 @@ import tools.NetTool
 object PaiPaiBid {
   def main(args: Array[String]) {
   }
+
   /**
-    * 投标策略
-    *
-    * @param uid
-    * @param amount
-    * @return
+    * 流投标
+    * @param user 用户
+    * @param loans  新标的
+    * @return 投标数量
     */
-  def bid(uid:Int,amount:BigDecimal)={
-    val loans=cacheMethodString("bidLoans",29) {
-      PaiPaiLoans.catchPage(10, true).filter(_.Rate >= 20).sortBy(_.Rate * -1)
-    }
-    loans.foldLeft(false){(ret,loan)=> if(ret) ret else bidLoan(uid,amount.toInt,loan.ListingId,loan.Amount.toInt)}
-  }
-  /**
-    * 快速投标策略
-    *
-    * @param uid
-    * @param amount
-    * @return
-    */
-  def quickBid(uid:Int,amount:Int)={
-    val loans=cacheMethodString("bidLoans",29) {
-      PaiPaiLoans.catchPage(10, true).filter(_.Rate >=20).sortBy(_.Rate * -1)
-    }
-    loans.foldLeft(false){(ret,loan)=> if(ret) ret else bidLoan(uid,amount,loan.ListingId,loan.Amount.toInt)}
+  def bidStream(user: UserAccount,loans:List[Loan])={
+    val count= ((user.money - user.dayReturnMoney ) /50).toInt
+    loans.foldLeft(0){(ret,loan)=> if(ret>=count) ret else if(bidLoan(user.id,50,loan.ListingId,loan.Amount.toInt)) ret +1 else ret }
   }
 
   /**

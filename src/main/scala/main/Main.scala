@@ -7,7 +7,8 @@ object Main {
   def main(args: Array[String]) {
     PaiPaiUser.updateUsers
     run(PaiPaiLoans.collectLoan)
-    PaiPaiUser.collectUser
+    run(PaiPaiUser.collectUser)
+    PaiPaiLoans.loanStream()
   }
 
 }

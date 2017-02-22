@@ -42,7 +42,6 @@ object PaiPaiUser {
         if(i% kv._1 ==0){
           kv._2 match{
             case "check" =>run(checkUsers())
-            case "quick" =>run(quickUsers())
             case "borrowCheck"=>run(checkBorrowUsers)
           }
         }
@@ -82,21 +81,8 @@ object PaiPaiUser {
     users.foreach { v =>
       println(v.userName.decrypt())
       val ck=cacheMethodString("user_cookie_"+v.uid,3600*24){login(v.userName.decrypt(),v.passWord.decrypt())}
-      def bid(user: UserAccount,cookie: CookieStore){
-        val (allMoney,account)=updateUserAccount(v.uid,cookie)
-        println(v.userName.decrypt()+":"+account)
-        if((account - user.dayReturnMoney) >= BigDecimal(50)){
-          // 触发投标业务
-          val amount=if(account>=BigDecimal(100)) BigDecimal(50) else account
-          val hasBid=PaiPaiBid.bid(v.uid,amount)
-          if((account - user.dayReturnMoney)>=BigDecimal(100) &&hasBid){ //循环投标
-            bid(user,cookie)
-          }else{
-            updateUserAccount(v.uid,cookie)
-          }
-        }
-      }
-      bid(v,ck)
+      val (allMoney,account)=updateUserAccount(v.uid,ck)
+      println("update account:"+v.userName.decrypt()+":"+account)
       Thread.sleep(1000)
       }
   }
@@ -116,7 +102,7 @@ object PaiPaiUser {
   def checkBorrowUsers(){
     val users=new UserAccount().queryAll()
     users.foreach { v =>
-      println(v.userName.decrypt())
+      println("check borrow:"+v.userName.decrypt())
       val ck=cacheMethodString("user_cookie_"+v.uid,3600*24){login(v.userName.decrypt(),v.passWord.decrypt())}
       val (_,canBorrowMoney,_)=updateUserBorrowAccount(v.uid,ck)
       if(canBorrowMoney>10000){
@@ -125,31 +111,19 @@ object PaiPaiUser {
       Thread.sleep(1000)
     }
   }
-  /**
-    * 快速投标
-    */
-  def quickUsers(){
-    val users=new UserAccount().queryAll()
-    users.foreach { v =>
-      println(v.userName.decrypt())
-      val ck=cacheMethodString("user_cookie_"+v.uid,3600*24){login(v.userName.decrypt(),v.passWord.decrypt())}
-      var money=v.money - v.dayReturnMoney
-      def bid(user: UserAccount,cookie: CookieStore){
-        println(v.userName.decrypt()+":quick:"+money)
-        if(money>= BigDecimal(100)){
-          // 触发投标业务
-          val hasBid=PaiPaiBid.quickBid(v.uid,50)
-          if(v.money - v.dayReturnMoney >=BigDecimal(100) &&hasBid){ //循环投标
-            money -= BigDecimal(50)
-            bid(user,cookie)
-          }else{
-            updateUserAccount(v.uid,cookie)
-          }
-        }
+  //用户流
+  def userStream(list:List[Loan]) ={
+    val users=new UserAccount().queryAll().filter(v=> v.money - v.dayReturnMoney > 100)
+    users.map{user=>
+      val count=PaiPaiBid.bidStream(user,list)
+      println(user.userName.decrypt()+":bid:"+count+",money:"+count*50)
+      if(count>0  && (user.money -count * 50 - user.dayReturnMoney) <= 100){
+        val ck=cacheMethodString("user_cookie_"+user.uid,3600*24){login(user.userName.decrypt(),user.passWord.decrypt())}
+        updateUserAccount(user.uid,ck)
+        Thread.sleep(500)
       }
-      bid(v,ck)
-      Thread.sleep(1000)
     }
+
   }
 
   /**
