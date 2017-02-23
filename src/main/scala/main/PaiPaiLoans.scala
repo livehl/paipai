@@ -77,7 +77,7 @@ object PaiPaiLoans {
       val loans=list.filter(_.Rate>=20).filter(v=> !dbLoans.contains(v.ListingId)).map{loan=>
         val id=loan.insert()
         loanInfo(loan.ListingId,loan.Title)
-        Thread.sleep(200)
+        Thread.sleep(300)
         loan
       }.sortBy(_.Rate * -1)
     //流
@@ -95,7 +95,7 @@ object PaiPaiLoans {
       println(ids.size)
     ids.grouped(100) foreach { page =>
         println(" check new page:"+page)
-        page.mutile(2).foreach { v =>
+        page.foreach { v =>
             checkLoan(v)
           Thread.sleep(500)
         }

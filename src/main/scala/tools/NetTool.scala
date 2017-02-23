@@ -36,7 +36,7 @@ object NetTool {
     //设置请求和传输超时时间
     RequestConfig.custom()
       .setSocketTimeout(10000)//.setProxy(new HttpHost("127.0.0.1",8888))
-      .setConnectTimeout(20000).build()
+      .setConnectTimeout(10000).build()
   }
   val connManager ={
     val cm=new PoolingHttpClientConnectionManager()
