@@ -114,7 +114,7 @@ object PaiPaiUser {
     val users=new UserAccount().queryAll().filter(v=> v.money - v.dayReturnMoney > 100)
     users.map{user=>
       val count=PaiPaiBid.bidStream(user,list)
-      println(user.userName.decrypt()+":bid:"+count+",money:"+count*50)
+      println(new Date().sdatetime+user.userName.decrypt()+":bid:"+count+",money:"+count*50)
       if(count>0  && (user.money -count * 50 - user.dayReturnMoney) <= 100){
         val ck=cacheMethodString("user_cookie_"+user.uid,3600*24){login(user.userName.decrypt(),user.passWord.decrypt())}
         updateUserAccount(user.uid,ck)

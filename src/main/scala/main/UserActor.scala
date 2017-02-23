@@ -29,7 +29,6 @@ class UserActor extends Actor with ActorLogging  {
           }else if(hasBid){ //动态修正金额
             users(user.id)=new UserAccount(id=user.id,money=user.money - 50,dayReturnMoney=user.dayReturnMoney,userName = user.userName)
           }
-          Thread.sleep(1000)
         }
       }
     case user:UserAccount=> //更新账户信息
