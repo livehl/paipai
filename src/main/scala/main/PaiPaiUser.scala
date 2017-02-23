@@ -107,7 +107,6 @@ object PaiPaiUser {
       if(canBorrowMoney>10000){
          PaiPaiBorrow.borrow(v.uid,10000)
       }
-      Thread.sleep(1000)
     }
   }
   //用户流
