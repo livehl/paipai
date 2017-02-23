@@ -92,7 +92,7 @@ object PaiPaiLoans {
       } else {
         i=1
       }
-      Thread.sleep(500)
+      Thread.sleep(1000)
     }
   }
 
