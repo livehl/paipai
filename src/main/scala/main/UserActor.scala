@@ -51,13 +51,20 @@ class UserActor extends Actor with ActorLogging  {
     if(!notBid) return false
     val cookie=Cache.getCache("user_cookie_"+uid)
     if(cookie.isEmpty) return false
-    val (_,html)=NetTool.HttpPost("http://m.invest.ppdai.com/Listing/BuyHotListingByListingId",cookie.get.asInstanceOf[CookieStore],Map("ListingId"->loan.ListingId.toString,"amount"->amount.toString,"MaxAmount"->loan.Amount.toString))
-    new Bid(0,uid,loan.ListingId,amount,new Date()).insert()
-    val bidok=html.contains("成功")
-    if(!bidok){
-      println(html)
-    }
-    bidok
+    val funding = PaiPaiLoans.checkLoan(loan.ListingId)
+    if (funding < 100) {
+      val (_, html) = NetTool.HttpPost("http://m.invest.ppdai.com/Listing/BuyHotListingByListingId", cookie.get.asInstanceOf[CookieStore], Map("ListingId" -> loan.ListingId.toString, "amount" -> amount.toString, "MaxAmount" -> loan.Amount.toString))
+      new Bid(0, uid, loan.ListingId, amount, new Date()).insert()
+      val bidok = html.contains("成功")
+      if (!bidok) {
+        if (html.contains("借款列表不存在或已过期")) {
+          println("借款列表不存在或已过期:" + loan.ListingId)
+        } else {
+          println(html)
+        }
+      }
+      bidok
+    }else false
   }
 
   def login(user:String,pwd:String)={
