@@ -10,22 +10,24 @@ import org.apache.http.client.CookieStore
 import org.jsoup.Jsoup
 import tools.{Image, NetTool}
 
+import scala.collection.mutable
 import scala.util.Random
 
 /**
   * Created by admin on 2/23/2017.
   */
 class UserActor extends Actor with ActorLogging  {
+  val users= new mutable.HashMap()++= (new UserAccount().queryAll().map(v=> v.id->v).toMap)
   def receive = {
     case loan:Loan =>
       safe {
-        users.map{user=>
+        users.map(_._2).filter(v=> v.money - v.dayReturnMoney > 100).map{user=>
           val hasBid=bidLoan(user.uid,50,loan)
           println(user.userName.decrypt()+":bid:50,"+hasBid)
           if(hasBid  && (user.money - 50 - user.dayReturnMoney) <= 100){
               self ! user
           }else if(hasBid){ //动态修正金额
-            new UserAccount(id=user.id,money=user.money - 50).update("id","money")
+            users(user.id)=new UserAccount(id=user.id,money=user.money - 50,dayReturnMoney=user.dayReturnMoney,userName = user.userName)
           }
         }
       }
@@ -35,14 +37,13 @@ class UserActor extends Actor with ActorLogging  {
           login(user.userName.decrypt(), user.passWord.decrypt())
         }
         updateUserAccount(user.uid, ck)
+        users(user.id)=new UserAccount().queryById(user.id).get
       }
     case uq: UnSupportQueryExcepiton =>
       log.error(uq, "收到一个来自自身或者其他服务的不支持请求")
     case a: Any =>
       sender ! new UnSupportExcepiton
   }
-
-  def users=new UserAccount().queryAll().filter(v=> v.money - v.dayReturnMoney > 100)
 
   def bidLoan(uid:Int,amount:Int,loan:Loan):Boolean={
     val notBid=new Bid().query("uid=? and lid=?",uid,loan.ListingId).size == 0
