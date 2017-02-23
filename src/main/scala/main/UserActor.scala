@@ -20,7 +20,7 @@ class UserActor extends Actor with ActorLogging  {
     case loan:Loan =>
       safe {
         users.map{user=>
-          val hasBid=bidLoan(user.id,50,loan)
+          val hasBid=bidLoan(user.uid,50,loan)
           println(user.userName.decrypt()+":bid:50,"+hasBid)
           if(hasBid  && (user.money - 50 - user.dayReturnMoney) <= 100){
               self ! user

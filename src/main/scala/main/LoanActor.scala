@@ -19,10 +19,10 @@ class LoanActor(user:ActorRef)  extends Actor with ActorLogging  {
         loans.filter(_.Rate>=20).filter(v=> !dbLoans.contains(v.ListingId)).sortBy(_.Rate * -1).map{loan=>
           val id=loan.insert()
           val html=loanInfo(loan.ListingId,loan.Title)
-          Thread.sleep(300)
           if(canBid(loan,html)){
             user ! loan
           }
+          Thread.sleep(300)
         }
       }
     case uq: UnSupportQueryExcepiton =>
