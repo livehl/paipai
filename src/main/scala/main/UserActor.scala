@@ -23,7 +23,7 @@ class UserActor extends Actor with ActorLogging  {
       safe {
         users.map(_._2).filter(v=> v.money - v.dayReturnMoney > 100).map{user=>
           val hasBid=bidLoan(user.uid,50,loan)
-          println(user.userName.decrypt()+":bid:50,"+hasBid)
+          println(new Date().sdatetime+" "+loan.ListingId+" "+user.userName.decrypt()+":bid:50,"+hasBid)
           if(hasBid  && (user.money - 50 - user.dayReturnMoney) <= 100){
               self ! user
           }else if(hasBid){ //动态修正金额

@@ -45,7 +45,7 @@ object PaiPaiBid {
       val (_, html) = NetTool.HttpPost("http://m.invest.ppdai.com/Listing/BuyHotListingByListingId", cookie.get.asInstanceOf[CookieStore], Map("ListingId" -> lid.toString, "amount" -> amount.toString, "MaxAmount" -> maxMoney.toString))
       new Bid(0, uid, lid, amount, new Date()).insert()
       val bidok = html.contains("成功")
-      println(s"bid:${amount},${bidok}")
+      println(new Date().sdatetime +" "+lid+" "+s"bid:${amount},${bidok}")
       bidok
     } else false
   }
