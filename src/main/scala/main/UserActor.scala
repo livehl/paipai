@@ -29,6 +29,7 @@ class UserActor extends Actor with ActorLogging  {
           }else if(hasBid){ //动态修正金额
             users(user.id)=new UserAccount(id=user.id,money=user.money - 50,dayReturnMoney=user.dayReturnMoney,userName = user.userName)
           }
+          Thread.sleep(2000)
         }
       }
     case user:UserAccount=> //更新账户信息
@@ -53,6 +54,9 @@ class UserActor extends Actor with ActorLogging  {
     val (_,html)=NetTool.HttpPost("http://m.invest.ppdai.com/Listing/BuyHotListingByListingId",cookie.get.asInstanceOf[CookieStore],Map("ListingId"->loan.ListingId.toString,"amount"->amount.toString,"MaxAmount"->loan.Amount.toString))
     new Bid(0,uid,loan.ListingId,amount,new Date()).insert()
     val bidok=html.contains("成功")
+    if(!bidok){
+      log.info(html)
+    }
     bidok
   }
 
