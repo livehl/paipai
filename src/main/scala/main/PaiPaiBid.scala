@@ -23,7 +23,7 @@ object PaiPaiBid {
     */
   def bidStream(user: UserAccount,loans:List[Loan])={
     val count= ((user.money - user.dayReturnMoney ) /50).toInt
-    loans.foldLeft(0){(ret,loan)=> if(ret>=count) ret else if(bidLoan(user.id,50,loan.ListingId,loan.Amount.toInt)) ret +1 else ret }
+    loans.foldLeft(0){(ret,loan)=> if(ret>=count) ret else if(bidLoan(user.uid,50,loan.ListingId,loan.Amount.toInt)) ret +1 else ret }
   }
 
   /**
