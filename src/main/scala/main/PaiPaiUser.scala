@@ -121,6 +121,8 @@ object PaiPaiUser {
         val ck=cacheMethodString("user_cookie_"+user.uid,3600*24){login(user.userName.decrypt(),user.passWord.decrypt())}
         updateUserAccount(user.uid,ck)
         Thread.sleep(500)
+      }else if(count>0){ //动态修正金额
+        new UserAccount(id=user.id,money=user.money - count * 50).update("id","money")
       }
     }
 

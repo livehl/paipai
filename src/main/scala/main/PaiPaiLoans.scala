@@ -79,7 +79,7 @@ object PaiPaiLoans {
         loanInfo(loan.ListingId,loan.Title)
         Thread.sleep(300)
         loan
-      }.sortBy(_.Rate * -1)
+      }.filter(v=>canBid(v)).sortBy(_.Rate * -1)
     //流
     if(loans.size>0) {
       println("stream loan:" + loans.size)
@@ -127,6 +127,27 @@ object PaiPaiLoans {
     new LoanData(id,title,data,new Date()).insert()
     Aliyun.saveFile("loan/"+id,data.getBytes("utf-8"))
     data
+  }
+
+  def canBid(loan:Loan):Boolean={
+    //审核逾期信息
+    val cacheData=new LoanData().queryById(loan.id)
+    println(if(cacheData.isDefined) "use nosql" else "use file")
+    val fullData=if(cacheData.isDefined) cacheData.map(_.text) else  Aliyun.getFile("loan/"+loan.id).map(v=> new String(v,"utf-8"))
+    if(fullData.isEmpty) return false
+    val html=fullData.get
+    val start=html.indexOf("正常还清次数")
+    if(start < 0) return false
+    def getExpNum(exp:String)={
+      val cutStart=html.indexOf(exp)
+      html.substring(cutStart+exp.length+1,html.indexOf("</p>",cutStart)).replace("""<span class="num">""","").replace("</span>","").replace("次","").trim()
+    }
+    val List(count,yu,hei)=List("正常还清次数","逾期(0-15天)还清次数","逾期(15天以上)还清次数").map(v=>getExpNum(v).toInt)
+    //没有成功还款过或者有过逾期15天的记录或者逾期次数大于借款数的1/10
+    if(count==0 || hei>0 || yu> (count/10)) return false
+    if(loan.Funding<100){
+      true
+    }else false
   }
 
 }
