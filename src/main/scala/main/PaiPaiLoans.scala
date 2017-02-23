@@ -2,6 +2,7 @@ package main
 
 import java.util.Date
 
+import akka.actor.ActorRef
 import com.typesafe.config.ConfigFactory
 import db._
 import org.apache.http.client.CookieStore
@@ -68,7 +69,30 @@ object PaiPaiLoans {
       } else {
         i=1
       }
-      Thread.sleep(1000)
+      Thread.sleep(500)
+    }
+  }
+  def loanActor(loanActor: ActorRef){
+    val cookie=PaiPaiUser.getUserCookie
+    var i=1
+    while (true){
+      val (_, str) = NetTool.HttpPost("http://m.invest.ppdai.com/listing/ajaxindex", cookie, Map("pageIndex" -> i.toString))
+      if (!isEmpty(str)) {
+        val lists = toBean(str, classOf[List[Map[String, AnyRef]]]).map(v => new Loan().fromJson(v.toJson))
+        if(System.currentTimeMillis()/1000 % 30==1){
+          println(new Date().sdatetime+"page:"+i+",size:"+lists.size)
+        }
+        //流
+        loanActor ! lists.filter(v => v.Rate >= 18)
+        if (lists.size < 10) {
+          i=1
+        }else{
+          i+=1
+        }
+      } else {
+        i=1
+      }
+      Thread.sleep(200)
     }
   }
 
