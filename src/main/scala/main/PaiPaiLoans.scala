@@ -155,9 +155,9 @@ object PaiPaiLoans {
 
   def canBid(loan:Loan):Boolean={
     //审核逾期信息
-    val cacheData=new LoanData().queryById(loan.id)
+    val cacheData=new LoanData().queryById(loan.ListingId)
     println(if(cacheData.isDefined) "use nosql" else "use file")
-    val fullData=if(cacheData.isDefined) cacheData.map(_.text) else  Aliyun.getFile("loan/"+loan.id).map(v=> new String(v,"utf-8"))
+    val fullData=if(cacheData.isDefined) cacheData.map(_.text) else  Aliyun.getFile("loan/"+loan.ListingId).map(v=> new String(v,"utf-8"))
     if(fullData.isEmpty) return false
     val html=fullData.get
     val start=html.indexOf("正常还清次数")
