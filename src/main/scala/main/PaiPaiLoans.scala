@@ -102,7 +102,7 @@ object PaiPaiLoans {
         val id=loan.insert()
         val html=loanInfo(loan.ListingId,loan.Title)
         Thread.sleep(300)
-        if(canBid(loan,html)){
+        if(canBid(loan,html) && loan.Funding < 100){
           Some(loan)
         }else None
       }.filter(_.isDefined).map(_.get)

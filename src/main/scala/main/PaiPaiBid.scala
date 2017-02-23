@@ -40,14 +40,11 @@ object PaiPaiBid {
     if(!notBid) return false
     val cookie=Cache.getCache("user_cookie_"+uid)
     if(cookie.isEmpty) return false
-    val  funding=PaiPaiLoans.checkLoan(lid)
-    if(funding<100){
-      val (_,html)=NetTool.HttpPost("http://m.invest.ppdai.com/Listing/BuyHotListingByListingId",cookie.get.asInstanceOf[CookieStore],Map("ListingId"->lid.toString,"amount"->amount.toString,"MaxAmount"->maxMoney.toString))
-      new Bid(0,uid,lid,amount,new Date()).insert()
-      val bidok=html.contains("成功")
-      println(s"bid:${amount},${bidok}")
-      bidok
-    }else false
+    val (_,html)=NetTool.HttpPost("http://m.invest.ppdai.com/Listing/BuyHotListingByListingId",cookie.get.asInstanceOf[CookieStore],Map("ListingId"->lid.toString,"amount"->amount.toString,"MaxAmount"->maxMoney.toString))
+    new Bid(0,uid,lid,amount,new Date()).insert()
+    val bidok=html.contains("成功")
+    println(s"bid:${amount},${bidok}")
+    bidok
   }
 
 }
