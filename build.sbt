@@ -3,7 +3,7 @@ import NativePackagerHelper._
 
 name := "paipai"
 
-version := "1.7.5"
+version := "1.7.6"
 
 scalaVersion := "2.11.7"
 
@@ -40,7 +40,7 @@ javaOptions in Universal ++= Seq(
 )
 
 
-mainClass in Compile := Some("main.ActorMain")
+mainClass in Compile := Some("main.Main")
 
 dockerCommands :=Seq(
   Cmd("FROM","livehl/java8"),
