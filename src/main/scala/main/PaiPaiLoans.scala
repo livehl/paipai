@@ -98,12 +98,14 @@ object PaiPaiLoans {
 
   def loanSaveStream(list:List[Loan]){
     val dbLoans=if(list.isEmpty) (0::Nil).toSet[Int] else  new Loan().query(s"ListingId in (${list.map(_.ListingId).mkString(",")})").map(_.ListingId).toSet[Int]
-      val loans=list.filter(_.Rate>=20).filter(v=> !dbLoans.contains(v.ListingId)).map{loan=>
+      val loans=list.filter(_.Rate>=20).filter(v=> !dbLoans.contains(v.ListingId)).sortBy(_.Rate * -1).map{loan=>
         val id=loan.insert()
-        loanInfo(loan.ListingId,loan.Title)
+        val html=loanInfo(loan.ListingId,loan.Title)
         Thread.sleep(300)
-        loan
-      }.filter(v=>canBid(v)).sortBy(_.Rate * -1)
+        if(canBid(loan,html)){
+          Some(loan)
+        }else None
+      }.filter(_.isDefined).map(_.get)
     //流
     if(loans.size>0) {
       println("stream loan:" + loans.size)
@@ -145,7 +147,7 @@ object PaiPaiLoans {
     *
     * @param id
     */
-  def loanInfo(id:Int,title:String){
+  def loanInfo(id:Int,title:String)={
     val cookie=PaiPaiUser.getUserCookie
     val data=NetTool.HttpGet("http://invest.ppdai.com/loan/info?id="+id,cookie)._2
     new LoanData(id,title,data,new Date()).insert()
@@ -153,13 +155,8 @@ object PaiPaiLoans {
     data
   }
 
-  def canBid(loan:Loan):Boolean={
+  def canBid(loan:Loan,html:String):Boolean={
     //审核逾期信息
-    val cacheData=new LoanData().queryById(loan.ListingId)
-    println(if(cacheData.isDefined) "use nosql" else "use file")
-    val fullData=if(cacheData.isDefined) cacheData.map(_.text) else  Aliyun.getFile("loan/"+loan.ListingId).map(v=> new String(v,"utf-8"))
-    if(fullData.isEmpty) return false
-    val html=fullData.get
     val start=html.indexOf("正常还清次数")
     if(start < 0) return false
     def getExpNum(exp:String)={
