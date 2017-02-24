@@ -111,7 +111,7 @@ object PaiPaiUser {
   }
   //用户流
   def userStream(list:List[Loan]) ={
-    val users=new UserAccount().queryAll().filter(v=> v.money - v.dayReturnMoney > 100)
+    val users=new UserAccount().queryAll().filter(v=> v.money - v.dayReturnMoney > 50)
     users.map{user=>
       val count=PaiPaiBid.bidStream(user,list)
       println(new Date().sdatetime+user.userName.decrypt()+":bid:"+count+",money:"+count*50)
