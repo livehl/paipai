@@ -5,7 +5,9 @@ import common.Tool._
   */
 object Main {
   def main(args: Array[String]) {
-    PaiPaiUser.updateUsers
+    safe {
+      PaiPaiUser.updateUsers
+    }
     run(PaiPaiLoans.collectLoan)
     run(PaiPaiUser.collectUser)
     PaiPaiLoans.loanStream()
