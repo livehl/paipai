@@ -113,6 +113,7 @@ object PaiPaiUser {
   def userStream(list:List[Loan]) ={
     val users=new UserAccount().queryAll().filter(v=> v.money - v.dayReturnMoney > 50)
     users.map{user=>
+      val bidList=if((user.money  - user.dayReturnMoney) < 200 && new Date().getHours < 20) list.filter(_.Rate>20) else list
       val count=PaiPaiBid.bidStream(user,list)
       println(new Date().sdatetime+user.userName.decrypt()+":bid:"+count+",money:"+count*50)
       if(count>0  && (user.money -count * 50 - user.dayReturnMoney) <= 100){
