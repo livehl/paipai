@@ -122,7 +122,7 @@ object PaiPaiLoans {
       val loans=list.filter(_.Rate>=20).filter(v=> !dbLoans.contains(v.ListingId)).sortBy(_.Rate * -1).map{loan=>
         val id=loan.insert()
         val html=loanInfo(loan.ListingId,loan.Title)
-        Thread.sleep(500)
+        Thread.sleep(300)
         if(canBid(loan,html) && loan.Funding < 100){
           Some(loan)
         }else None
@@ -168,12 +168,14 @@ object PaiPaiLoans {
     *
     * @param id
     */
-  def loanInfo(id:Int,title:String)={
-    val cookie=PaiPaiUser.getUserCookie
-    val data=NetTool.HttpGet("http://invest.ppdai.com/loan/info?id="+id,cookie)._2
-    new LoanData(id,title,data,new Date()).insert()
-    Aliyun.saveFile("loan/"+id,data.getBytes("utf-8"))
-    data
+  def  loanInfo(id:Int,title:String)={
+    this.synchronized {
+      val cookie = PaiPaiUser.getUserCookie
+      val data = NetTool.HttpGet("http://invest.ppdai.com/loan/info?id=" + id, cookie)._2
+      new LoanData(id, title, data, new Date()).insert()
+      Aliyun.saveFile("loan/" + id, data.getBytes("utf-8"))
+      data
+    }
   }
 
   def canBid(loan:Loan,html:String):Boolean={
