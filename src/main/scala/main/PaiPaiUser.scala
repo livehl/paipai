@@ -83,8 +83,8 @@ object PaiPaiUser {
     users.foreach { v =>
       println(v.userName.decrypt())
       val ck=cacheMethodString("user_cookie_"+v.uid,3600*24){login(v.userName.decrypt(),v.passWord.decrypt())}
-      val (allMoney,account)=updateUserAccount(v.uid,ck)
-      println("update account:"+v.userName.decrypt()+":"+account)
+      val (allMoney,account,coupon)=updateUserAccount(v.uid,ck)
+      println("update account:"+v.userName.decrypt()+":"+account+",coupon:"+coupon)
       Thread.sleep(1000)
       }
   }
@@ -142,8 +142,9 @@ object PaiPaiUser {
       val html=Jsoup.parse(htmlData)
       val money=html.select(".account-balance .numble")
       val (allMoney,account)=(money.last().text().toBigDecimal,money.first().text().toBigDecimal)
-      new UserAccount(uid=uid,money=account,allMoney=allMoney).update("uid","money","allMoney")
-      (allMoney,account)
+      val count=Jsoup.parse(NetTool.HttpGet("http://www.ppdai.com/account/coupon",cookie)._2).select(".tableStyleOne tr").size() -1
+      new UserAccount(uid=uid,money=account,allMoney=allMoney,couponCount = count).update("uid","money","allMoney","couponCount")
+      (allMoney,account,count)
   }
   /**
     * 更新借款账户信息

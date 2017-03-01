@@ -22,7 +22,7 @@ class UserActor extends Actor with ActorLogging  {
     case loan:Loan =>
       safe {
         users.map(_._2).filter(v=> v.money - v.dayReturnMoney > 100).map{user=>
-          val hasBid=bidLoan(user.uid,50,loan)
+          val hasBid=if(user.couponCount>0) bidLoanCoupon(user.uid,50,loan) else bidLoan(user.uid,50,loan)
           println(new Date().sdatetime+" "+loan.ListingId+" "+user.userName.decrypt()+":bid:50,"+hasBid)
           if(hasBid  && (user.money - 50 - user.dayReturnMoney) <= 100){
               self ! user
@@ -54,6 +54,34 @@ class UserActor extends Actor with ActorLogging  {
     val funding = PaiPaiLoans.checkLoan(loan.ListingId)
     if (funding < 100) {
       val (_, html) = NetTool.HttpPost("http://m.invest.ppdai.com/Listing/BuyHotListingByListingId", cookie.get.asInstanceOf[CookieStore], Map("ListingId" -> loan.ListingId.toString, "amount" -> amount.toString, "MaxAmount" -> loan.Amount.toString))
+      new Bid(0, uid, loan.ListingId, amount, new Date()).insert()
+      val bidok = html.contains("成功")
+      if (!bidok) {
+        if (html.contains("借款列表不存在或已过期")) {
+          println("借款列表不存在或已过期:" + loan.ListingId)
+        } else {
+          println(html)
+        }
+      }
+      bidok
+    }else false
+  }
+
+  def bidLoanCoupon(uid:Int,amount:Int,loan:Loan):Boolean={
+    val notBid=new Bid().query("uid=? and lid=?",uid,loan.ListingId).size == 0
+    if(!notBid) return false
+    val cookie=Cache.getCache("user_cookie_"+uid)
+    if(cookie.isEmpty) return false
+    val funding = PaiPaiLoans.checkLoan(loan.ListingId)
+    if (funding < 100) {
+      val (ck,chtml)=NetTool.HttpGet(s"http://invest.ppdai.com/bid/info?source=2&listingId=${loan.ListingId}&title=&date=${loan.Months}&UrlReferrer=1&money=${amount}",cookie.get.asInstanceOf[CookieStore])
+      val coupon=Jsoup.parse(chtml).select("#couponSelect")
+      val (cid,ccode,cmoney)=if(coupon.html()contains("activityid")){
+        val op=coupon.select("option").get(0)
+        (op.attr("activityid"),op.attr("value"),op.attr("couponamount"))
+      }else ("","","")
+      val (_, html) = NetTool.HttpPost("http://invest.ppdai.com/Bid/Bid", cookie.get.asInstanceOf[CookieStore], Map("Reason"->"",   "ListingId" -> loan.ListingId.toString, "Amount" -> amount.toString,
+        "UrlReferrer" ->"1","CouponCode"->ccode,"CouponAmount"->cmoney,"ActivityId"->cid,"SubListType"->"0"))
       new Bid(0, uid, loan.ListingId, amount, new Date()).insert()
       val bidok = html.contains("成功")
       if (!bidok) {

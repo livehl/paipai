@@ -154,6 +154,8 @@ class UserAccount(val id:Int=0,
                   val allBorrowMoney:BigDecimal=BigDecimal(0),
                   @(ApiModelProperty @field)(value = "今日待还", required = true)
                   val dayReturnMoney:BigDecimal=BigDecimal(0),
+                  @(ApiModelProperty @field)(value = "优惠券数量", required = true)
+                  val couponCount:Int=0,
                   @(ApiModelProperty @field)(value = "创建时间", required = true)
                   val createTime: Date = new Date(System.currentTimeMillis())) extends BaseDBEntity[UserAccount]("UserAccount")
 @ApiModel(value = "Bid",description = "投标记录")
