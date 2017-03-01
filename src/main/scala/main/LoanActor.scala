@@ -22,7 +22,7 @@ class LoanActor(user:ActorRef)  extends Actor with ActorLogging  {
           if(canBid(loan,html)){
             user ! loan
           }
-          Thread.sleep(300)
+          Thread.sleep(1000)
         }
       }
     case uq: UnSupportQueryExcepiton =>
