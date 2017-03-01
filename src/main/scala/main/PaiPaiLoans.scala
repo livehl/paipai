@@ -116,13 +116,32 @@ object PaiPaiLoans {
       Thread.sleep(1000)
     }
   }
+  def loanActorTemp(loanActor: ActorRef){
+    var i=1
+    while (true) {
+      safe {
+        val lists = getLoan(i).toList
+        if (System.currentTimeMillis() / 1000 % 30 == 1) {
+          println(new Date().sdatetime + "page:" + i + ",size:" + lists.size)
+        }
+        //流
+        loanActor ! lists.filter(v => v.Rate >= 18)
+        if (lists.size < 10) {
+          i = 1
+        } else {
+          i += 1
+        }
+        Thread.sleep(2000)
+      }
+    }
+  }
 
   def loanSaveStream(list:List[Loan]){
     val dbLoans=if(list.isEmpty) (0::Nil).toSet[Int] else  new Loan().query(s"ListingId in (${list.map(_.ListingId).mkString(",")})").map(_.ListingId).toSet[Int]
       val loans=list.filter(_.Rate>=20).filter(v=> !dbLoans.contains(v.ListingId)).sortBy(_.Rate * -1).map{loan=>
         val id=loan.insert()
         val html=loanInfo(loan.ListingId,loan.Title)
-        Thread.sleep(300)
+        Thread.sleep(500)
         if(canBid(loan,html) && loan.Funding < 100){
           Some(loan)
         }else None

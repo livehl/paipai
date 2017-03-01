@@ -15,7 +15,7 @@ object ActorMain {
     val system = ActorSystem.create("PaiPai")
     val userActor = system.actorOf(Props[UserActor], name = "user_actor")
     val loanActor = system.actorOf(Props(new LoanActor(userActor)), name = "loan_actor")
-    PaiPaiLoans.loanActor(loanActor)
+    PaiPaiLoans.loanActorTemp(loanActor)
   }
 
 }
