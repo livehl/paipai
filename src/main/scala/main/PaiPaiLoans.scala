@@ -26,8 +26,8 @@ object PaiPaiLoans {
 //    val cookie=login("livehl@126.com","hl890218")
 //    println(cookie)
 //    checkLoans
-    loanStream
-
+    val loans=getLoan(3)
+    println(loans.toJson())
   }
 
   /**
@@ -74,6 +74,25 @@ object PaiPaiLoans {
       }
     }
   }
+  def loanStreamTemp(){
+    var i=1
+    while (true) {
+      safe {
+          val lists = getLoan(i).toList
+          if (System.currentTimeMillis() / 1000 % 30 == 1) {
+            println(new Date().sdatetime + "page:" + i + ",size:" + lists.size)
+          }
+          //流
+          run(loanSaveStream(lists.filter(v => v.Rate >= 18)))
+          if (lists.size < 10) {
+            i = 1
+          } else {
+            i += 1
+          }
+        Thread.sleep(2000)
+      }
+    }
+  }
   def loanActor(loanActor: ActorRef){
     val cookie=PaiPaiUser.getUserCookie
     var i=1
@@ -103,7 +122,7 @@ object PaiPaiLoans {
       val loans=list.filter(_.Rate>=20).filter(v=> !dbLoans.contains(v.ListingId)).sortBy(_.Rate * -1).map{loan=>
         val id=loan.insert()
         val html=loanInfo(loan.ListingId,loan.Title)
-        Thread.sleep(300)
+        Thread.sleep(500)
         if(canBid(loan,html) && loan.Funding < 100){
           Some(loan)
         }else None
@@ -171,6 +190,19 @@ object PaiPaiLoans {
     if(loan.Funding<100){
       true
     }else false
+  }
+
+  def getLoan(page:Int)={
+    val cookie=PaiPaiUser.getUserCookie
+    val (_, str) = NetTool.HttpGet(s"http://invest.ppdai.com/loan/listnew?LoanCategoryId=4&SortType=0&PageIndex=${page}&Rates=3%2C4%2C&BorrowCount=2%2C3%2C&MinAmount=0&MaxAmount=0", cookie)
+    val list=Jsoup.parse(str).select(".outerBorrowList  ol").asScala
+    list.map{ol=>
+        val id=ol.select(".title ").attr("href").split("id=").last
+        new Loan(0,ol.select(".title ").attr("title"),id.toInt,ol.select(".sum").text().replace("¥","").replace(",","").toBigDecimal,
+          ol.select(".creditRating").attr("class").split(" ").last,0,0,ol.select(".limitTime").text().replace("个月","").toInt,ol.select(".brate").text().replace("%","").toDouble,
+          new Date(),null
+        )
+    }
   }
 
 }

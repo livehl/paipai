@@ -10,7 +10,7 @@ object Main {
     }
     run(PaiPaiLoans.collectLoan)
     run(PaiPaiUser.collectUser)
-    PaiPaiLoans.loanStream()
+    PaiPaiLoans.loanStreamTemp()
   }
 
 }
