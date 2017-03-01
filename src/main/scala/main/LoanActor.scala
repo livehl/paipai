@@ -22,7 +22,7 @@ class LoanActor(user:ActorRef)  extends Actor with ActorLogging  {
           if(canBid(loan,html)){
             user ! loan
           }
-          Thread.sleep(1000)
+          Thread.sleep(200)
         }
       }
     case uq: UnSupportQueryExcepiton =>
@@ -49,7 +49,9 @@ class LoanActor(user:ActorRef)  extends Actor with ActorLogging  {
 
   def loanInfo(id:Int,title:String)={
     val cookie=PaiPaiUser.getUserCookie
-    val data=NetTool.HttpGet("http://invest.ppdai.com/loan/info?id="+id,cookie)._2
+    val data= PaiPaiLoans.loanLock.synchronized {
+      NetTool.HttpGet("http://invest.ppdai.com/loan/info?id=" + id, cookie)._2
+    }
     new LoanData(id,title,data,new Date()).insert()
     run {
       Aliyun.saveFile("loan/" + id, data.getBytes("utf-8"))

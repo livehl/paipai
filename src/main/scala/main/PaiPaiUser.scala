@@ -22,11 +22,11 @@ object PaiPaiUser {
   def main(args: Array[String]) {
 //    checkUsers
 //    checkBorrowUsers
-    updateUsers
+    checkUsersCoupon
 //    val cookie=cacheOTS("testLogin"){login("livehl@126.com","hl890218")}
 //    val (allMoney,_,account)=updateUserBorrowAccount(1,cookie)
 //    println(account)
-    checkUsers
+//    checkUsers
     System.exit(0)
   }
 
@@ -45,6 +45,9 @@ object PaiPaiUser {
             case "borrowCheck"=>run(checkBorrowUsers)
           }
         }
+      }
+      if(new Date().getDate==1 && new Date().getHours==7 &&new Date().getMinutes==5 && new Date().getSeconds==8){
+        run(checkUsersCoupon())
       }
       Thread.sleep(1000)
     }
@@ -191,6 +194,24 @@ object PaiPaiUser {
   def getUserCookie={
     val user=new UserAccount().queryAll().head
      cacheMethodString("user_cookie_"+user.uid,3600*24){login(user.userName.decrypt(),user.passWord.decrypt())}
+  }
+
+  /**
+    * 领取蚊子肉
+    */
+  def checkUsersCoupon(){
+    val users=new UserAccount().queryAll()
+    users.foreach { v =>
+      println("check Coupon:"+v.userName.decrypt())
+      val ck=cacheMethodString("user_cookie_"+v.uid,3600*24){login(v.userName.decrypt(),v.passWord.decrypt())}
+      println(getUserCoupon(ck))
+    }
+  }
+
+  def getUserCoupon(cookie:CookieStore)={
+      val ck=NetTool.HttpGet("https://m.invest.ppdai.com/Activity/Calendar?mType=Group",cookie)._1
+    val ret=NetTool.HttpPost("https://m.invest.ppdai.com/Activity/InsertCalendar",ck)._2
+    ret
   }
 
 

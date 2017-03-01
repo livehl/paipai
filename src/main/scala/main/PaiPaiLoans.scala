@@ -20,6 +20,7 @@ import scala.collection.mutable.ArrayBuffer
   */
 object PaiPaiLoans {
   lazy val conf = ConfigFactory.load()
+  val loanLock:String=""
 
   def main(args: Array[String]) {
 //
@@ -131,7 +132,7 @@ object PaiPaiLoans {
         } else {
           i += 1
         }
-        Thread.sleep(2000)
+        Thread.sleep(1000)
       }
     }
   }
@@ -190,7 +191,9 @@ object PaiPaiLoans {
   def  loanInfo(id:Int,title:String)={
     this.synchronized {
       val cookie = PaiPaiUser.getUserCookie
-      val data = NetTool.HttpGet("http://invest.ppdai.com/loan/info?id=" + id, cookie)._2
+      val data= loanLock.synchronized {
+        NetTool.HttpGet("http://invest.ppdai.com/loan/info?id=" + id, cookie)._2
+      }
       new LoanData(id, title, data, new Date()).insert()
       Aliyun.saveFile("loan/" + id, data.getBytes("utf-8"))
       data
@@ -215,7 +218,9 @@ object PaiPaiLoans {
 
   def getLoan(page:Int)={
     val cookie=PaiPaiUser.getUserCookie
-    val (_, str) = NetTool.HttpGet(s"http://invest.ppdai.com/loan/listnew?LoanCategoryId=4&SortType=0&PageIndex=${page}&Rates=3%2C4%2C&BorrowCount=2%2C3%2C&MinAmount=0&MaxAmount=0", cookie)
+    val (_, str) = loanLock.synchronized {
+      NetTool.HttpGet(s"http://invest.ppdai.com/loan/listnew?LoanCategoryId=4&SortType=0&PageIndex=${page}&Rates=3%2C4%2C&BorrowCount=2%2C3%2C&MinAmount=0&MaxAmount=0", cookie)
+    }
     val list=Jsoup.parse(str).select(".outerBorrowList  ol").asScala
     list.map{ol=>
         val id=ol.select(".title ").attr("href").split("id=").last
