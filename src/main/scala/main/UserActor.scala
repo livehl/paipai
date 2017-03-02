@@ -74,14 +74,18 @@ class UserActor extends Actor with ActorLogging  {
     if(cookie.isEmpty) return false
     val funding = PaiPaiLoans.checkLoan(loan.ListingId)
     if (funding < 100) {
-      val (ck,chtml)=NetTool.HttpGet(s"http://invest.ppdai.com/bid/info?source=2&listingId=${loan.ListingId}&title=&date=${loan.Months}&UrlReferrer=1&money=${amount}",cookie.get.asInstanceOf[CookieStore])
+      val (ck,chtml)= PaiPaiLoans.loanLock.synchronized {
+        NetTool.HttpGet(s"http://invest.ppdai.com/bid/info?source=2&listingId=${loan.ListingId}&title=&date=${loan.Months}&UrlReferrer=1&money=${amount}",cookie.get.asInstanceOf[CookieStore])
+      }
       val coupon=Jsoup.parse(chtml).select("#couponSelect")
       val (cid,ccode,cmoney)=if(coupon.html()contains("activityid")){
         val op=coupon.select("option").get(0)
         (op.attr("activityid"),op.attr("value"),op.attr("couponamount"))
       }else ("","","")
-      val (_, html) = NetTool.HttpPost("http://invest.ppdai.com/Bid/Bid", cookie.get.asInstanceOf[CookieStore], Map("Reason"->"",   "ListingId" -> loan.ListingId.toString, "Amount" -> amount.toString,
-        "UrlReferrer" ->"1","CouponCode"->ccode,"CouponAmount"->cmoney,"ActivityId"->cid,"SubListType"->"0"))
+      val (_, html) =PaiPaiLoans.loanLock.synchronized {
+        NetTool.HttpPost("http://invest.ppdai.com/Bid/Bid", cookie.get.asInstanceOf[CookieStore], Map("Reason"->"",   "ListingId" -> loan.ListingId.toString, "Amount" -> amount.toString,
+          "UrlReferrer" ->"1","CouponCode"->ccode,"CouponAmount"->cmoney,"ActivityId"->cid,"SubListType"->"0"))
+      }
       new Bid(0, uid, loan.ListingId, amount, new Date()).insert()
       val bidok = html.contains("成功")
       if (!bidok) {

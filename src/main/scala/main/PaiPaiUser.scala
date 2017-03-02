@@ -154,7 +154,9 @@ object PaiPaiUser {
     * @return
     */
   def updateUserBorrowAccount(uid:Int,cookie:CookieStore)={
-    val html=Jsoup.parse(NetTool.HttpGet("http://invest.ppdai.com/account/lend",cookie)._2)
+    val html=PaiPaiLoans.loanLock.synchronized {
+      Jsoup.parse(NetTool.HttpGet("http://invest.ppdai.com/account/lend",cookie)._2)
+    }
     val money=html.select(".my-ac-ctListall em").get(2)
     val allBorrowMoney=money.text().drop(1).replace(",","").toBigDecimal
     val canBorrowhtml=Jsoup.parse(NetTool.HttpGet("http://loan.ppdai.com/borrow/createlist/6",cookie)._2)
