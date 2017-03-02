@@ -120,6 +120,7 @@ object PaiPaiLoans {
     }
   }
   def loanActorTemp(loanActor: ActorRef){
+    var oldlist=new ArrayBuffer[String](100)
     var i=1
     while (true) {
       safe {
@@ -128,7 +129,14 @@ object PaiPaiLoans {
           println(new Date().sdatetime + "page:" + i + ",size:" + lists.size)
         }
         //流
-        loanActor ! lists.filter(v => v.Rate >= 18)
+        val streamList=lists.filter(v=> !oldlist.contains(v.ListingId)).filter(v => v.Rate >= 18)
+        if(streamList.size>0){
+          loanActor ! streamList
+        }
+        lists.filter(v=> !oldlist.contains(v.ListingId)).foreach{v=> oldlist.append(v.ListingId)}
+        if(oldlist.size>=100){
+          oldlist.remove(0,30)
+        }
         if (lists.size < 10) {
           i = 1
         } else {

@@ -21,6 +21,7 @@ class UserActor extends Actor with ActorLogging  {
   def receive = {
     case loan:Loan =>
       safe {
+        println("recv loan:"+loan.ListingId)
         users.map(_._2).filter(v=> v.money - v.dayReturnMoney > 50).map{user=>
           val hasBid=if(user.couponCount>0) bidLoanCoupon(user.uid,50,loan) else bidLoan(user.uid,50,loan)
           println(new Date().sdatetime+" "+loan.ListingId+" "+user.userName.decrypt()+":bid:50,"+hasBid)
@@ -29,6 +30,7 @@ class UserActor extends Actor with ActorLogging  {
           }else if(hasBid){ //动态修正金额
             users(user.id)=new UserAccount(id=user.id,money=user.money - 50,dayReturnMoney=user.dayReturnMoney,userName = user.userName)
           }
+          Thread.sleep(200)
         }
       }
     case user:UserAccount=> //更新账户信息
@@ -73,14 +75,17 @@ class UserActor extends Actor with ActorLogging  {
     if(cookie.isEmpty) return false
     val funding = PaiPaiLoans.checkLoan(loan.ListingId)
     if (funding < 100) {
-      val (ck,chtml)= PaiPaiLoans.loanLock.synchronized {
-        NetTool.HttpGet(s"http://invest.ppdai.com/bid/info?source=2&listingId=${loan.ListingId}&title=&date=${loan.Months}&UrlReferrer=1&money=${amount}",cookie.get.asInstanceOf[CookieStore])
-      }
-      val coupon=Jsoup.parse(chtml).select("#couponSelect")
-      val (cid,ccode,cmoney)=if(coupon.html()contains("activityid")){
-        val op=coupon.select("option").get(0)
-        (op.attr("activityid"),op.attr("value"),op.attr("couponamount"))
-      }else ("","","")
+      val (cid,ccode,cmoney)=Cache.getCache("user_coupon"+uid).getOrElse{
+        val (ck,chtml)= PaiPaiLoans.loanLock.synchronized {
+          NetTool.HttpGet(s"http://invest.ppdai.com/bid/info?source=2&listingId=${loan.ListingId}&title=&date=${loan.Months}&UrlReferrer=1&money=${amount}",cookie.get.asInstanceOf[CookieStore])
+        }
+        Thread.sleep(300)
+        val coupon=Jsoup.parse(chtml).select("#couponSelect")
+        if(coupon.html()contains("activityid")){
+          val op=coupon.select("option").get(0)
+          (op.attr("activityid"),op.attr("value"),op.attr("couponamount"))
+        }else ("","","")
+      }.asInstanceOf[Tuple3[String,String,String]]
       val (_, html) =PaiPaiLoans.loanLock.synchronized {
         NetTool.HttpPost("http://invest.ppdai.com/Bid/Bid", cookie.get.asInstanceOf[CookieStore], Map("Reason"->"",   "ListingId" -> loan.ListingId.toString, "Amount" -> amount.toString,
           "UrlReferrer" ->"1","CouponCode"->ccode,"CouponAmount"->cmoney,"ActivityId"->cid,"SubListType"->"0"))
@@ -93,6 +98,8 @@ class UserActor extends Actor with ActorLogging  {
         } else {
           println(html)
         }
+      }else{
+        Cache.delCache("user_coupon"+uid)
       }
       bidok
     }else false
