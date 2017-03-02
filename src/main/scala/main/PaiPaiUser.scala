@@ -49,6 +49,9 @@ object PaiPaiUser {
       if(new Date().getDate==1 && new Date().getHours==7 &&new Date().getMinutes==5 && new Date().getSeconds==8){
         run(checkUsersCoupon())
       }
+      if( new Date().getHours==8 &&new Date().getMinutes==5 && new Date().getSeconds==8){
+        run(checkUsersSign())
+      }
       Thread.sleep(1000)
     }
   }
@@ -214,6 +217,23 @@ object PaiPaiUser {
   def getUserCoupon(cookie:CookieStore)={
       val ck=NetTool.HttpGet("https://m.invest.ppdai.com/Activity/Calendar?mType=Group",cookie)._1
     val ret=NetTool.HttpPost("https://m.invest.ppdai.com/Activity/InsertCalendar",ck)._2
+    ret
+  }
+  /**
+    * 领取蚊子肉
+    */
+  def checkUsersSign(){
+    val users=new UserAccount().queryAll()
+    users.foreach { v =>
+      println("check Sign:"+v.userName.decrypt())
+      val ck=cacheMethodString("user_cookie_"+v.uid,3600*24){login(v.userName.decrypt(),v.passWord.decrypt())}
+      println(getUserSign(ck))
+    }
+  }
+
+  def getUserSign(cookie:CookieStore)={
+    val ck=NetTool.HttpGet("http://weixin.ppdai.com/SignIn",cookie)._1
+    val ret=NetTool.HttpPost("http://weixin.ppdai.com/SignIn/SignIn",ck)._2
     ret
   }
 
