@@ -27,8 +27,10 @@ object PaiPaiLoans {
 //    val cookie=login("livehl@126.com","hl890218")
 //    println(cookie)
 //    checkLoans
-    val loans=getLoan(3)
-    println(loans.toJson())
+    while(true) {
+      val loans = getLoan(1)
+      println(loans.toJson())
+    }
   }
 
   /**
@@ -132,7 +134,7 @@ object PaiPaiLoans {
         } else {
           i += 1
         }
-        Thread.sleep(1000)
+        Thread.sleep(500)
       }
     }
   }
