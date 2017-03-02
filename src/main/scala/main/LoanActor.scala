@@ -15,7 +15,7 @@ class LoanActor(user:ActorRef)  extends Actor with ActorLogging  {
   def receive = {
     case loans:List[Loan] =>
       safe {
-        println("acting loans:"+loans.size)
+        println(new Date().sdatetime+" acting loans:"+loans.size +",id:"+loans.map(_.ListingId).mkString(","))
         val dbLoans=if(loans.isEmpty) (0::Nil).toSet[Int] else  new Loan().query(s"ListingId in (${loans.map(_.ListingId).mkString(",")})").map(_.ListingId).toSet[Int]
         loans.filter(_.Rate>=20).filter(v=> !dbLoans.contains(v.ListingId)).sortBy(_.Rate * -1).map{loan=>
           val id=loan.insert()

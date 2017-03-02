@@ -13,7 +13,7 @@ import common.Tool._
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 /**
   * Created by isaac on 16/3/9.
@@ -120,7 +120,7 @@ object PaiPaiLoans {
     }
   }
   def loanActorTemp(loanActor: ActorRef){
-    var oldlist=new ArrayBuffer[String](100)
+    var oldlist=new ListBuffer[Int]()
     var i=1
     while (true) {
       safe {
