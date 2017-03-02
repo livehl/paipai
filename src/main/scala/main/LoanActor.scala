@@ -12,6 +12,7 @@ import tools.NetTool
   * Created by admin on 2/23/2017.
   */
 class LoanActor(user:ActorRef)  extends Actor with ActorLogging  {
+  def userCount=cacheMethodString("user_bid_count",60){new UserAccount().queryAll().filter(v=> v.money - v.dayReturnMoney > 50).size.toString}.toInt
   def receive = {
     case loans:List[Loan] =>
       safe {
@@ -19,9 +20,11 @@ class LoanActor(user:ActorRef)  extends Actor with ActorLogging  {
         val dbLoans=if(loans.isEmpty) (0::Nil).toSet[Int] else  new Loan().query(s"ListingId in (${loans.map(_.ListingId).mkString(",")})").map(_.ListingId).toSet[Int]
         loans.filter(_.Rate>=20).filter(v=> !dbLoans.contains(v.ListingId)).sortBy(_.Rate * -1).map{loan=>
           val id=loan.insert()
-          val html=loanInfo(loan.ListingId,loan.Title)
-          if(canBid(loan,html)){
-            user ! loan
+          if(userCount>0) {
+            val html = loanInfo(loan.ListingId, loan.Title)
+            if (canBid(loan, html)) {
+              user ! loan
+            }
           }
         }
       }
