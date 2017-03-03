@@ -32,6 +32,10 @@ class UserActor extends Actor with ActorLogging  {
           }
           Thread.sleep(200)
         }
+        cacheMethodString("user_account_cache",60){
+          users.clear()
+          users++= (new UserAccount().queryAll().map(v=> v.id->v).toMap)
+        }
       }
     case user:UserAccount=> //更新账户信息
       safe {
