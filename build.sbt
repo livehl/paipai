@@ -20,6 +20,8 @@ libraryDependencies ++= Seq(
   "javax.mail" % "mail" % "1.4.7",
   "org.jsoup" % "jsoup" % "1.8.3",
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.6.3",
+  "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.3",
+  "com.fasterxml.jackson.core" % "jackson-annotations" % "2.6.3",
   "net.jpountz.lz4" % "lz4" % "1.3.0",
   "com.typesafe" % "config" % "1.3.0",
   "io.swagger" % "swagger-annotations" % "1.5.6",
