@@ -1,6 +1,11 @@
 package main
 
+import java.util.Date
+
 import com.ppdai.open.core.{OpenApiClient, PropertyObject, RsaCryptoHelper, ValueTypeEnum}
+import common.Tool._
+import db.Loan
+import scala.collection.JavaConverters._
 
 /**
   * Created by admin on 3/3/2017.
@@ -23,8 +28,12 @@ object PaiPaiSDK {
     OpenApiClient.Init("300127ae80f843119d04d05b6db66de3", RsaCryptoHelper.PKCSType.PKCS8, pubKey, privKey)
     val result = OpenApiClient.send(gwurl + "/invest/LLoanInfoService/LoanList", new PropertyObject("PageIndex", "1", ValueTypeEnum.String), new PropertyObject("DeviceFP", "asdfasdf4asdf546asf", ValueTypeEnum.Int32))
     if (result.isSucess){
-      result.getContext
-    }
+      result.getContext.jsonToMap("LoanInfos").asInstanceOf[List[Map[String,Any]]].map{l=>
+        val m=l.map(kv=> kv._1->kv._2.toString)
+        val funding= ((1 - m("RemainFunding").toDouble/(m("Amount").toDouble)) * 100).toInt
+        new Loan(0,m("Title"),m("ListingId").toInt,m("Amount").toDouble,m("CreditCode"),funding,0,m("Months").toInt,m("Rate").toDouble,new Date(),null)
+      }
+    }else Nil
   }
 
 }

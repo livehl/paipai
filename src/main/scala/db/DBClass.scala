@@ -212,22 +212,44 @@ class Loan(val id:Int=0,
 
 @ApiModel(value = "LoanInfo",description = "借款详细信息")
 class LoanInfo(val id:Int=0,
-               @(ApiModelProperty @field)(value = "借款用户", required = true,reference = "LoanUser")
-               val uid:String="",
-               @(ApiModelProperty @field)(value = "标题", required = true)
-               val Title:String="",
-               @(ApiModelProperty @field)(value = "id", required = true)
+               @(ApiModelProperty @field)(value = "借款用户", required = true)
+               val BorrowName:String="",
+               @(ApiModelProperty @field)(value = "ListingId", required = true)
                val ListingId:Int=0,
-               @(ApiModelProperty @field)(value = "借款信息", required = true)
-               val info:String="",
-               @(ApiModelProperty @field)(value = "认证信息", required = true)
-               val very:String="",
-               @(ApiModelProperty @field)(value = "审核信息", required = true)
-               val audit:String="",
-               @(ApiModelProperty @field)(value = "统计信息", required = true)
-               val count:String="",
-               @(ApiModelProperty @field)(value = "扩展数据", required = false,hidden = true)
-               val ext:String="",
+               @(ApiModelProperty @field)(value = "性别(性别1 男 2 女 0 未知)", required = true)
+               val Gender:String="",
+               @(ApiModelProperty @field)(value = "学历", required = true)
+               val EducationDegree:String="",
+               @(ApiModelProperty @field)(value = "毕业院校", required = true)
+               val GraduateSchool:String="",
+               @(ApiModelProperty @field)(value = "学习形式", required = true)
+               val StudyStyle:String="",
+               @(ApiModelProperty @field)(value = "年龄", required = false,hidden = true)
+               val Age:Int=0,
+               @(ApiModelProperty @field)(value = "成功借款次数", required = false,hidden = true)
+               val SuccessCount:Int=0,
+               @(ApiModelProperty @field)(value = "正常还清次数", required = false,hidden = true)
+               val NormalCount:Int=0,
+               @(ApiModelProperty @field)(value = "逾期(1-15)还清次数", required = false,hidden = true)
+               val OverdueLessCount:Int=0,
+               @(ApiModelProperty @field)(value = "逾期(15天以上)还清次数", required = false,hidden = true)
+               val OverdueMoreCount:Int=0,
+               @(ApiModelProperty @field)(value = "剩余待还本金", required = false,hidden = true)
+               val OwingPrincipal:Int=0,
+               @(ApiModelProperty @field)(value = "待还金额", required = false,hidden = true)
+               val OwingAmount:Int=0,
+               @(ApiModelProperty @field)(value = "学历认证(0 未认证 1已认证)", required = false,hidden = true)
+               val CertificateValidate:Int=0,
+               @(ApiModelProperty @field)(value = "户籍认证(0 未认证 1已认证)", required = false,hidden = true)
+               val NciicIdentityCheck:Int=0,
+               @(ApiModelProperty @field)(value = "手机认证(0 未认证 1已认证)", required = false,hidden = true)
+               val PhoneValidate:Int=0,
+               @(ApiModelProperty @field)(value = "视屏认证(0 未认证 1已认证)", required = false,hidden = true)
+               val VideoValidate:Int=0,
+               @(ApiModelProperty @field)(value = "征信认证(0 未认证 1已认证)", required = false,hidden = true)
+               val CreditValidate:Int=0,
+               @(ApiModelProperty @field)(value = "学籍认证(0 未认证 1已认证)", required = false,hidden = true)
+               val EducateValidate:Int=0,
                @(ApiModelProperty @field)(value = "创建日期", required = false,hidden = true)
                val createTime:Date=new Date()
               )extends BaseDBEntity[LoanInfo]("LoanInfo")

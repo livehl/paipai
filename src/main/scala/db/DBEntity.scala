@@ -341,7 +341,7 @@ object DBEntity {
   }
 
   //事务方法域
-  def transaction()(fun: => Any)(exfun: Throwable => Any) {
+  def transaction(fun: => Any)(exfun: Throwable => Any) {
     try {
       val id = DBEntity.startTransaction()
       fun

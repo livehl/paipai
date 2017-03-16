@@ -19,6 +19,10 @@ import scala.util.Random
 object PaiPaiUser {
   lazy val conf = ConfigFactory.load()
 
+  var time=8
+
+  var sec=25
+
   def main(args: Array[String]) {
 //    checkUsers
 //    checkBorrowUsers
@@ -46,11 +50,13 @@ object PaiPaiUser {
           }
         }
       }
-      if(new Date().getDate==1 && new Date().getHours==7 &&new Date().getMinutes==5 && new Date().getSeconds==8){
+      if(new Date().getDate==1 && new Date().getHours==time &&new Date().getMinutes==4 && new Date().getSeconds==sec){
         run(checkUsersCoupon())
       }
-      if( new Date().getHours==8 &&new Date().getMinutes==5 && new Date().getSeconds==8){
+      if( new Date().getHours==time &&new Date().getMinutes==5 && new Date().getSeconds==sec){
         run(checkUsersSign())
+        time=8+ Random.nextInt(12)
+        sec=2+ + Random.nextInt(50)
       }
       Thread.sleep(1000)
     }
