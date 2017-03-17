@@ -103,7 +103,7 @@ object TimeTool {
     } else cal1.get(Calendar.DAY_OF_YEAR) - cal2.get(Calendar.DAY_OF_YEAR)
   }
 
-  def calTimeUse(fun: Any => Any): Any = {
+  def calTimeUse[T](fun: => T): T = {
     val start = System.currentTimeMillis()
     val result = fun
     val end = System.currentTimeMillis()

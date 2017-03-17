@@ -6,7 +6,6 @@ import akka.actor.{Actor, ActorLogging, ActorRef}
 import common.Tool._
 import common._
 import db._
-import tools.NetTool
 
 /**
   * Created by admin on 2/23/2017.
@@ -18,7 +17,7 @@ class LoanActor(user:ActorRef)  extends Actor with ActorLogging  {
         println(new Date().sdatetime+" acting loans:"+loans.size +",id:"+loans.map(_.ListingId).mkString(","))
         val dbLoans=if(loans.isEmpty) (0::Nil).toSet[Int] else  new Loan().query(s"ListingId in (${loans.map(_.ListingId).mkString(",")})").map(_.ListingId).toSet[Int]
         val newLoans=loans.filter(_.Rate>=20).filter(v=> !dbLoans.contains(v.ListingId)).sortBy(_.Rate * -1)
-        val loanInfos=Loans.getLoanInfo(newLoans.map((_.ListingId)))
+        val loanInfos=LoansApi.getLoanInfo(newLoans.map((_.ListingId)))
         val loansMap=newLoans.map(v=> v.ListingId -> v).toMap
         val canBidLoans=loanInfos.filter(v=>canBid(loansMap(v.ListingId),v))
         user ! canBidLoans.map(v=>loansMap(v.ListingId))

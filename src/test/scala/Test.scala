@@ -19,7 +19,7 @@ object Test {
 
   def main(array: Array[String]): Unit = {
 //    println("1d".dateExp.sdatetime)
-    println(new LoanInfo().createTable())
+    println(new TaskLog().createTable())
 //    val html="""<p class="tab-hd"><span></span>借款记录</p>
 //               |                    <div class="flex wid720">
 //               |                        <p class="ex col-1">注册时间：2016/12/7 </p>

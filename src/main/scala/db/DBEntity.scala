@@ -330,6 +330,9 @@ object DBEntity {
   def sql(sql: String, params: String*) = {
     DBTool.update(sql, params: _*)
   }
+  def updateBatch(sql: List[String]): List[Int] = {
+    DBTool.updateBatch(sql)
+  }
 
   def queryMap(sql: String, params: AnyRef*) = {
     DBTool.queryDataMap(sql, params: _*) map (_.toMap)
@@ -459,6 +462,19 @@ private object DBTool {
       }
     } catch {
       case e: SQLException => throw new DetailSQLException(e, sql)
+    } finally {
+      st.close()
+      returnConn(conn)
+    }
+  }
+  def updateBatch(sql: List[String]): List[Int] = {
+    val conn = getConn()
+    val st = conn.createStatement()
+    sql.foreach(v=>st.addBatch(v))
+    try {
+      st.executeBatch().toList
+    } catch {
+      case e: SQLException => throw new DetailSQLException(e, sql.mkString(","))
     } finally {
       st.close()
       returnConn(conn)
