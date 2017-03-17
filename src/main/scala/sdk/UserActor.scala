@@ -23,10 +23,11 @@ class UserActor extends Actor with ActorLogging  {
     }
     val hasBid=if(user.couponCount>0) bidLoanCoupon(user.uid,50,loan,ck) else bidLoan(user.uid,50,loan,ck)
     println(new Date().sdatetime+" "+loan.ListingId+" "+user.userName.decrypt()+":bid:50,"+hasBid)
-    if(hasBid ==0  && (user.money - 50 - user.dayReturnMoney) <= 100){
-      self ! user
-    }else if(hasBid==0){ //动态修正金额
+    if(hasBid==0){ //动态修正金额
       users(user.id)=new UserAccount(id=user.id,money=user.money - 50,dayReturnMoney=user.dayReturnMoney,userName = user.userName)
+      if((user.money - 50 - user.dayReturnMoney) <= 100){
+        self ! user
+      }
     }
   }
   def receive = {
