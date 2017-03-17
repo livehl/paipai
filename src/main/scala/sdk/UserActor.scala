@@ -18,7 +18,10 @@ import scala.collection.mutable
 class UserActor extends Actor with ActorLogging  {
   val users= new mutable.HashMap()++= (new UserAccount().queryAll().map(v=> v.id->v).toMap)
   def bid(user: UserAccount,loan: Loan)={
-    val hasBid=if(user.couponCount>0) bidLoanCoupon(user.uid,50,loan) else bidLoan(user.uid,50,loan)
+    val ck = cacheMethodString("user_cookie_" + user.uid, 3600 * 24) {
+      UserApi.login(user.userName.decrypt(), user.passWord.decrypt())
+    }
+    val hasBid=if(user.couponCount>0) bidLoanCoupon(user.uid,50,loan,ck) else bidLoan(user.uid,50,loan,ck)
     println(new Date().sdatetime+" "+loan.ListingId+" "+user.userName.decrypt()+":bid:50,"+hasBid)
     if(hasBid ==0  && (user.money - 50 - user.dayReturnMoney) <= 100){
       self ! user
@@ -55,14 +58,12 @@ class UserActor extends Actor with ActorLogging  {
       sender ! new UnSupportExcepiton
   }
 
-  def bidLoan(uid:Int,amount:Int,loan:Loan):Int={
+  def bidLoan(uid:Int,amount:Int,loan:Loan,ck:CookieStore):Int={
     val notBid=new Bid().query("uid=? and lid=?",uid,loan.ListingId).size == 0
     if(!notBid) return 1
-    val cookie=Cache.getCache("user_cookie_"+uid)
-    if(cookie.isEmpty) return 2
     val funding = 0// PaiPaiLoans.checkLoan(loan.ListingId)
     if (funding < 100) {
-      val (_, html) = NetTool.HttpPost("http://m.invest.ppdai.com/Listing/BuyHotListingByListingId", cookie.get.asInstanceOf[CookieStore], Map("ListingId" -> loan.ListingId.toString, "amount" -> amount.toString, "MaxAmount" -> loan.Amount.toString))
+      val (_, html) = NetTool.HttpPost("http://m.invest.ppdai.com/Listing/BuyHotListingByListingId", ck, Map("ListingId" -> loan.ListingId.toString, "amount" -> amount.toString, "MaxAmount" -> loan.Amount.toString))
       new Bid(0, uid, loan.ListingId, amount, new Date()).insert()
       val bidok = html.contains("成功")
       if (!bidok) {
@@ -76,16 +77,14 @@ class UserActor extends Actor with ActorLogging  {
     }else 3
   }
 
-  def bidLoanCoupon(uid:Int,amount:Int,loan:Loan):Int={
+  def bidLoanCoupon(uid:Int,amount:Int,loan:Loan,cookie:CookieStore):Int={
     val notBid=new Bid().query("uid=? and lid=?",uid,loan.ListingId).size == 0
     if(!notBid) return 1
-    val cookie=Cache.getCache("user_cookie_"+uid)
-    if(cookie.isEmpty) return 2
     val funding =0// PaiPaiLoans.checkLoan(loan.ListingId)
     if (funding < 100) {
       val (cid,ccode,cmoney)=Cache.getCache("user_coupon"+uid).getOrElse{
         val (ck,chtml)= LoansApi.loanLock.synchronized {
-          NetTool.HttpGet(s"http://invest.ppdai.com/bid/info?source=2&listingId=${loan.ListingId}&title=&date=${loan.Months}&UrlReferrer=1&money=${amount}",cookie.get.asInstanceOf[CookieStore])
+          NetTool.HttpGet(s"http://invest.ppdai.com/bid/info?source=2&listingId=${loan.ListingId}&title=&date=${loan.Months}&UrlReferrer=1&money=${amount}",cookie)
         }
         Thread.sleep(300)
         val coupon=Jsoup.parse(chtml).select("#couponSelect")
@@ -95,7 +94,7 @@ class UserActor extends Actor with ActorLogging  {
         }else ("","","")
       }.asInstanceOf[Tuple3[String,String,String]]
       val (_, html) =LoansApi.loanLock.synchronized {
-        NetTool.HttpPost("http://invest.ppdai.com/Bid/Bid", cookie.get.asInstanceOf[CookieStore], Map("Reason"->"",   "ListingId" -> loan.ListingId.toString, "Amount" -> amount.toString,
+        NetTool.HttpPost("http://invest.ppdai.com/Bid/Bid", cookie, Map("Reason"->"",   "ListingId" -> loan.ListingId.toString, "Amount" -> amount.toString,
           "UrlReferrer" ->"1","CouponCode"->ccode,"CouponAmount"->cmoney,"ActivityId"->cid,"SubListType"->"0"))
       }
       new Bid(0, uid, loan.ListingId, amount, new Date()).insert()

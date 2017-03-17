@@ -23,7 +23,7 @@ object UserApi {
   /**
     * 检查账户资金
     */
-  def checkUsers(){
+  def checkUsers()={
     val users=new UserAccount().queryAll()
     users.foreach { v =>
       println(v.userName.decrypt())
@@ -32,6 +32,7 @@ object UserApi {
       println("update account:"+v.userName.decrypt()+":"+account+",coupon:"+coupon)
       Thread.sleep(1000)
     }
+    "ok,"+users.size
   }
 
 
@@ -61,7 +62,7 @@ object UserApi {
   /**
     * 检查贷款账户资金
     */
-  def checkBorrowUsers(){
+  def checkBorrowUsers()={
     val users=new UserAccount().queryAll()
     users.foreach { v =>
       println("check borrow:"+v.userName.decrypt())
@@ -71,6 +72,7 @@ object UserApi {
         borrow(v.uid,10000)
       }
     }
+    "ok,"+users.size
   }
 
   /**
@@ -148,13 +150,14 @@ object UserApi {
   /**
     * 领取蚊子肉
     */
-  def checkUsersCoupon(){
+  def checkUsersCoupon()={
     val users=new UserAccount().queryAll()
     users.foreach { v =>
       println("check Coupon:"+v.userName.decrypt())
       val ck=cacheMethodString("user_cookie_"+v.uid,3600*24){login(v.userName.decrypt(),v.passWord.decrypt())}
       println(getUserCoupon(ck))
     }
+    "ok,"+users.size
   }
 
   def getUserCoupon(cookie:CookieStore)={
@@ -165,13 +168,14 @@ object UserApi {
   /**
     * 领取蚊子肉
     */
-  def checkUsersSign(){
+  def checkUsersSign()={
     val users=new UserAccount().queryAll()
     users.foreach { v =>
       println("check Sign:"+v.userName.decrypt())
       val ck=cacheMethodString("user_cookie_"+v.uid,3600*24){login(v.userName.decrypt(),v.passWord.decrypt())}
       println(getUserSign(ck))
     }
+    "ok,"+users.size
   }
 
   def getUserSign(cookie:CookieStore)={
@@ -180,7 +184,7 @@ object UserApi {
     ret
   }
   //更新账户余额
-  def updateUsers(){
+  def updateUsers()={
     val users=new UserAccount().queryAll()
     users.foreach { v =>
       println(v.userName.decrypt())
@@ -188,5 +192,6 @@ object UserApi {
       updateUserAccount(v.uid,ck)
       Thread.sleep(1000)
     }
+    "ok,"+users.size
   }
 }

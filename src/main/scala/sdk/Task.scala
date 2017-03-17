@@ -72,7 +72,8 @@ object Task {
               new TaskLog(0, t.id, t.time, 0, ret.toString, new Date()).insert()
             } catch {
               case ex: Throwable =>
-                new TaskLog(0, t.id, t.time, 1, null, new Date()).insert()
+                ex.printStackTrace()
+                new TaskLog(0, t.id, t.time, 1, ex.getMessage, new Date()).insert()
             }
           }
         }
