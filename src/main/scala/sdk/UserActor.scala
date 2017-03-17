@@ -20,9 +20,9 @@ class UserActor extends Actor with ActorLogging  {
   def bid(user: UserAccount,loan: Loan)={
     val hasBid=if(user.couponCount>0) bidLoanCoupon(user.uid,50,loan) else bidLoan(user.uid,50,loan)
     println(new Date().sdatetime+" "+loan.ListingId+" "+user.userName.decrypt()+":bid:50,"+hasBid)
-    if(hasBid  && (user.money - 50 - user.dayReturnMoney) <= 100){
+    if(hasBid ==0  && (user.money - 50 - user.dayReturnMoney) <= 100){
       self ! user
-    }else if(hasBid){ //动态修正金额
+    }else if(hasBid==0){ //动态修正金额
       users(user.id)=new UserAccount(id=user.id,money=user.money - 50,dayReturnMoney=user.dayReturnMoney,userName = user.userName)
     }
   }
@@ -55,11 +55,11 @@ class UserActor extends Actor with ActorLogging  {
       sender ! new UnSupportExcepiton
   }
 
-  def bidLoan(uid:Int,amount:Int,loan:Loan):Boolean={
+  def bidLoan(uid:Int,amount:Int,loan:Loan):Int={
     val notBid=new Bid().query("uid=? and lid=?",uid,loan.ListingId).size == 0
-    if(!notBid) return false
+    if(!notBid) return 1
     val cookie=Cache.getCache("user_cookie_"+uid)
-    if(cookie.isEmpty) return false
+    if(cookie.isEmpty) return 2
     val funding = 0// PaiPaiLoans.checkLoan(loan.ListingId)
     if (funding < 100) {
       val (_, html) = NetTool.HttpPost("http://m.invest.ppdai.com/Listing/BuyHotListingByListingId", cookie.get.asInstanceOf[CookieStore], Map("ListingId" -> loan.ListingId.toString, "amount" -> amount.toString, "MaxAmount" -> loan.Amount.toString))
@@ -71,16 +71,16 @@ class UserActor extends Actor with ActorLogging  {
         } else {
           println(html)
         }
-      }
-      bidok
-    }else false
+        4
+      } else 0
+    }else 3
   }
 
-  def bidLoanCoupon(uid:Int,amount:Int,loan:Loan):Boolean={
+  def bidLoanCoupon(uid:Int,amount:Int,loan:Loan):Int={
     val notBid=new Bid().query("uid=? and lid=?",uid,loan.ListingId).size == 0
-    if(!notBid) return false
+    if(!notBid) return 1
     val cookie=Cache.getCache("user_cookie_"+uid)
-    if(cookie.isEmpty) return false
+    if(cookie.isEmpty) return 2
     val funding =0// PaiPaiLoans.checkLoan(loan.ListingId)
     if (funding < 100) {
       val (cid,ccode,cmoney)=Cache.getCache("user_coupon"+uid).getOrElse{
@@ -106,11 +106,12 @@ class UserActor extends Actor with ActorLogging  {
         } else {
           println(html)
         }
+        4
       }else{
         Cache.delCache("user_coupon"+uid)
+        0
       }
-      bidok
-    }else false
+    }else 3
   }
 
 }
