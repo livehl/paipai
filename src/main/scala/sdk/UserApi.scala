@@ -68,8 +68,8 @@ object UserApi {
       println("check borrow:"+v.userName.decrypt())
       val ck=cacheMethodString("user_cookie_"+v.uid,3600*24){login(v.userName.decrypt(),v.passWord.decrypt())}
       val (_,canBorrowMoney,_)=updateUserBorrowAccount(v.uid,ck)
-      if(canBorrowMoney>10000){
-        borrow(v.uid,10000)
+      if(canBorrowMoney != null && canBorrowMoney > BigDecimal(10000)){
+        borrow(v.uid,BigDecimal(10000))
       }
     }
     "ok,"+users.size
