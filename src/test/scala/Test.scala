@@ -2,7 +2,6 @@ import java.io.{File, FileInputStream}
 import java.util.Date
 
 import common.OtsCache
-import main.PaiPaiLoans
 import common.Tool._
 import db._
 import org.apache.http.entity.ByteArrayEntity

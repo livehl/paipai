@@ -22,10 +22,9 @@ object Cache {
   lazy val conf = ConfigFactory.load()
   //一级缓存
   private val oneCache=Collections.synchronizedMap[String,AnyRef](new LRUMap(conf.getInt("cache.oneSize")).asInstanceOf[java.util.Map[String,AnyRef]])
-   //分别存储到一级缓存\二级缓存
+   //存储到缓存
   private def setCacheValue(key: String, v: AnyRef,time:Int)={
     val saveTime = if( time== Int.MaxValue) time else System.currentTimeMillis() / 1000 +time
-    val cacheData=new CacheData(v,time,false)
     oneCache.put(key, (saveTime, v))
   }
   def getCache(key:String)={
