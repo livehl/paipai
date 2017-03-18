@@ -65,7 +65,6 @@ class UserActor extends Actor with ActorLogging  {
     val funding = 0// PaiPaiLoans.checkLoan(loan.ListingId)
     if (funding < 100) {
       val (_, html) = NetTool.HttpPost("http://m.invest.ppdai.com/Listing/BuyHotListingByListingId", ck, Map("ListingId" -> loan.ListingId.toString, "amount" -> amount.toString, "MaxAmount" -> loan.Amount.toString))
-      new Bid(0, uid, loan.ListingId, amount, new Date()).insert()
       val bidok = html.contains("成功")
       if (!bidok) {
         if (html.contains("借款列表不存在或已过期")) {
@@ -74,7 +73,10 @@ class UserActor extends Actor with ActorLogging  {
           println(html)
         }
         4
-      } else 0
+      } else{
+        new Bid(0, uid, loan.ListingId, amount, new Date()).insert()
+        0
+      }
     }else 3
   }
 
@@ -98,7 +100,6 @@ class UserActor extends Actor with ActorLogging  {
         NetTool.HttpPost("http://invest.ppdai.com/Bid/Bid", cookie, Map("Reason"->"",   "ListingId" -> loan.ListingId.toString, "Amount" -> amount.toString,
           "UrlReferrer" ->"1","CouponCode"->ccode,"CouponAmount"->cmoney,"ActivityId"->cid,"SubListType"->"0"))
       }
-      new Bid(0, uid, loan.ListingId, amount, new Date()).insert()
       val bidok = html.contains("成功")
       if (!bidok) {
         if (html.contains("借款列表不存在或已过期")) {
@@ -108,6 +109,7 @@ class UserActor extends Actor with ActorLogging  {
         }
         4
       }else{
+        new Bid(0, uid, loan.ListingId, amount, new Date()).insert()
         Cache.delCache("user_coupon"+uid)
         0
       }
