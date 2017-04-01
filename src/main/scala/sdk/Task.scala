@@ -46,8 +46,10 @@ object Task {
               set(t.id)=h
             }
             val ret=date.getHours==set(t.id)&& date.getMinutes==minute && date.getSeconds ==second
-            second=second - Random.nextInt(3)
-            minute=minute - Random.nextInt(3)
+            if(ret) {
+              second = second - Random.nextInt(3)
+              minute = minute - Random.nextInt(3)
+            }
             ret
           case "rm"=>
             if(!set.contains(t.id)){
@@ -55,9 +57,11 @@ object Task {
               set(t.id)=d
             }
             val ret=date.getDate==set(t.id)&&date.getHours==hour&& date.getMinutes==minute && date.getSeconds ==second
-            second=second - Random.nextInt(3)
-            minute=minute - Random.nextInt(3)
-            hour=hour - Random.nextInt(3)
+            if(ret) {
+              second = second - Random.nextInt(3)
+              minute = minute - Random.nextInt(3)
+              hour = hour - Random.nextInt(3)
+            }
             ret
           case "d"=> date.sdate == value
           case v:Any=> println("unsuper:"+v)
