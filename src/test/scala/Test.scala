@@ -80,6 +80,7 @@ object Test {
 
 
   def runTasks(){
+    var two=0
     val set=new mutable.HashMap[Int,Int]()
     var hour=8
     var minute=27
@@ -128,7 +129,22 @@ object Test {
             false
         }
         if(isMatch){
-          println("match:"+date.sdatetime + ","+t.title)
+//          run {
+            val cl = Class.forName(t.method.split("\\.").dropRight(1).mkString(".")).newInstance()
+            val me = cl.getClass.getMethod(t.method.split("\\.").last)
+            try {
+              val ret = me.invoke(cl)
+              new TaskLog(0, t.id, t.time, 0, ret.toString, new Date()).insert()
+            } catch {
+              case ex: Throwable =>
+                ex.printStackTrace()
+                new TaskLog(0, t.id, t.time, 1, ex.getMessage, new Date()).insert()
+            }
+//          }
+          two=two +1
+        }
+        if(two==2) {
+          System.exit(0)
         }
       }
       t = t+ 1000
