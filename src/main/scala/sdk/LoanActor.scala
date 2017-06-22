@@ -38,8 +38,8 @@ class LoanActor(user:ActorRef)  extends Actor with ActorLogging  {
     //审核逾期信息
     if(loanInfo.NormalCount < 0) return false
     val List(count,yu,hei)=List(loanInfo.NormalCount,loanInfo.OverdueLessCount,loanInfo.OverdueMoreCount)
-    //没有成功还款过或者有过逾期15天的记录或者逾期次数大于借款数的1/10
-    if(count==0 || hei>0 || yu> (count/10)) return false
+    //没有成功还款过或者有过逾期的
+    if(count==0 || hei>0 || yu> 0) return false
     if(loan.Funding<100){
       true
     }else false

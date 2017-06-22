@@ -321,3 +321,12 @@ class TaskLog(val id: Int = 0,
               @(ApiModelProperty@field)(value = "创建日期", required = false, hidden = true)
               val createTime: Date = new Date()
              ) extends BaseDBEntity[TaskLog]("TaskLog")
+
+
+@ApiModel(value = "BackList", description = "黑名单")
+class BackList(val id: Int = 0,
+           @(ApiModelProperty@field)(value = "标的id", required = true)
+           val ListingId: String = "",
+           @(ApiModelProperty@field)(value = "创建日期", required = false, hidden = true)
+           val createTime: Date = new Date()
+          ) extends BaseDBEntity[BackList]("BackList")

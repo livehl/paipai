@@ -4,7 +4,7 @@ import java.util.Date
 
 import common.{Cache, TimeTool}
 import common.Tool.cacheMethodString
-import db.{Borrow, UserAccount}
+import db.{BackList, Borrow, UserAccount}
 import org.apache.http.client.CookieStore
 import org.jsoup.Jsoup
 import tools.{Image, NetTool}
@@ -12,6 +12,7 @@ import common.Tool._
 import org.apache.http.entity.{ContentType, StringEntity}
 
 import scala.collection.JavaConverters._
+import scala.io.Source
 import scala.util.Random
 
 /**
@@ -193,5 +194,36 @@ object UserApi {
       Thread.sleep(1000)
     }
     "ok,"+users.size
+  }
+  //获取所有用户的黑名单
+  def getAllBackList={
+    val users=new UserAccount().queryAll()
+    val datas=users.map { v =>
+      Thread.sleep(1000)
+      println(v.userName.decrypt())
+      val ck=cacheMethodString("user_cookie_"+v.uid,3600*24){login(v.userName.decrypt(),v.passWord.decrypt())}
+      getBackList(ck)
+    }.flatten.toSet
+    val backList=new BackList().queryAll().map(_.ListingId).toSet
+    datas.filterNot(v=> backList.contains(v)).foreach(v=> new BackList(0,v,new Date()).insert())
+    backList.filterNot(v=> datas.contains(v)).foreach(v=> new BackList(0,v,new Date()).delete("ListingId") )
+    "ok,"+datas.size
+  }
+  //获取指定用户的黑名单
+  def getBackList(ck:CookieStore)={
+    def getAllBackList(num:Int):List[String]= {
+      val page=Jsoup.parse(NetTool.HttpGet(s"http://invest.ppdai.com/account/blacklist?PageIndex=${num}&LateDayTo=10&LateDayFrom",ck)._2)
+      val table = page.select("table").asScala
+      val lines = table.map { tb =>
+        tb.select("tr").asScala.map { tr =>
+          tr.select("[listingid]").attr("listingid")
+        }
+      }
+      val maxPage = page.select(".pagerstatus").html().drop(1).dropRight(1).trim.toInt
+      (if(maxPage> num) getAllBackList(num +1) else Nil ) ::: lines.flatten.toList
+    }
+    val data=getAllBackList(1)
+    println(data)
+    data.filterNot(_.isEmpty)
   }
 }
