@@ -52,7 +52,7 @@ class LoanActor(user:ActorRef)  extends Actor with ActorLogging  {
       loanInfo.OverdueMoreCount,loanInfo.OwingPrincipal,loanInfo.OwingAmount,loanInfo.CertificateValidate,loanInfo.NciicIdentityCheck,
       loanInfo.PhoneValidate,loanInfo.VideoValidate,loanInfo.CreditValidate,loanInfo.EducateValidate,loan.Amount,CreditCode,
       loan.Months,loan.Rate).mkString(",")
-    NetTool.HttpPost(SDKMain.aiUrl,null,Map("data"->data))._2.toBigDecimal  > BigDecimal(0.8)
+    NetTool.HttpPost(SDKMain.aiUrl,null,Map("data"->data))._2.toBigDecimal  > BigDecimal(0.9)
 
 //    传统模式
 //    //审核逾期信息
