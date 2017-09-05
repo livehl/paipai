@@ -10,7 +10,7 @@ import db.BackList
   */
 object SDKMain {
   lazy val conf = ConfigFactory.load()
-  def aiUrl=conf.getString("aiurl")
+  def aiUrl=conf.getString("aiurl").trim
   def main(args: Array[String]) {
     UserApi.updateUsers
     run(Task.runTasks())

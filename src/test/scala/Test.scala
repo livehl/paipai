@@ -20,8 +20,9 @@ object Test {
 
   def main(array: Array[String]): Unit = {
 
-    runTasks
+//    runTasks
 
+    NetTool.HttpPost("http://ppdai.local/predict")
 
 //    println("1d".dateExp.sdatetime)
 //    println(new TaskLog().createTable())
