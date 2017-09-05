@@ -54,7 +54,7 @@ object LoansApi {
         if(oldlist.size>=100){
           oldlist.remove(0,30)
         }
-        if (lists.size < 2000) {
+        if (lists.size < 200) {
           i = 1
         } else {
           i += 1
@@ -114,6 +114,27 @@ object LoansApi {
         DBEntity.sql(sql.mkString(";"))
     }
     "ok,"+sqls.size
+  }
+
+  def checkBidLoans()={
+    DBEntity.queryMap(s"select ListingId from RetList where ListingId not in (select ListingId from LoanInfo)").map(_("ListingId").toString.toInt).grouped(30).toList.map{ids=>
+      val list=getLoanInfo(ids.toList)
+      DBEntity.transaction{
+        list.foreach(_.insert())
+      }{ex=>
+        ex.printStackTrace()
+      }
+      println(ids.size)
+    }
+    DBEntity.queryMap(s"select ListingId from BackList where ListingId not in (select ListingId from LoanInfo)").map(_("ListingId").toString.toInt).grouped(30).toList.map { ids =>
+      val list=getLoanInfo(ids.toList)
+      DBEntity.transaction{
+        list.foreach(_.insert())
+      }{ex=>
+        ex.printStackTrace()
+      }
+      println(ids.size)
+    }
   }
 
   val loanInfoKeys=Set("ListingId","GraduateSchool","NciicIdentityCheck","StudyStyle","BorrowName","CertificateValidate","OverdueMoreCount","PhoneValidate","OverdueLessCount","OwingAmount","Age","SuccessCount","CreditValidate","NormalCount","EducationDegree","Gender","VideoValidate","OwingPrincipal","EducateValidate")

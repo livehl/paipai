@@ -4,7 +4,7 @@ import java.util.Date
 
 import common.{Cache, TimeTool}
 import common.Tool.cacheMethodString
-import db.{BackList, Borrow, UserAccount}
+import db.{BackList, Borrow, RetList, UserAccount}
 import org.apache.http.client.CookieStore
 import org.jsoup.Jsoup
 import tools.{Image, NetTool}
@@ -217,6 +217,38 @@ object UserApi {
       val lines = table.map { tb =>
         tb.select("tr").asScala.map { tr =>
           tr.select("[listingid]").attr("listingid")
+        }
+      }
+      val maxPage = page.select(".pagerstatus").html().drop(1).dropRight(1).trim.toInt
+      (if(maxPage> num) getAllBackList(num +1) else Nil ) ::: lines.flatten.toList
+    }
+    val data=getAllBackList(1)
+    println(data)
+    data.filterNot(_.isEmpty)
+  }
+
+  def getAllRetList={
+    val users=new UserAccount().queryAll()
+    val datas=users.map { v =>
+      Thread.sleep(1000)
+      println(v.userName.decrypt())
+      val ck=cacheMethodString("user_cookie_"+v.uid,3600*24){login(v.userName.decrypt(),v.passWord.decrypt())}
+      getRetList(ck)
+    }.flatten.toSet
+    val retList=new RetList().queryAll().map(_.ListingId).toSet
+    datas.filterNot(v=> retList.contains(v)).foreach(v=> new RetList(0,v,new Date()).insert())
+//    retList.filterNot(v=> datas.contains(v)).foreach(v=> new RetList(0,v,new Date()).delete("ListingId") )
+    "ok,"+datas.size
+  }
+
+  //获取指定用户的还清名单
+  def getRetList(ck:CookieStore)={
+    def getAllBackList(num:Int):List[String]= {
+      val page=Jsoup.parse(NetTool.HttpGet(s"http://invest.ppdai.com/account/paybacklend?pageIndex=${num}&Type=1",ck)._2)
+      val table = page.select(".my-paid-list").asScala
+      val lines = table.map { tb =>
+        tb.select("span").asScala.map { tr =>
+          tr.select("[listid]").attr("listid")
         }
       }
       val maxPage = page.select(".pagerstatus").html().drop(1).dropRight(1).trim.toInt

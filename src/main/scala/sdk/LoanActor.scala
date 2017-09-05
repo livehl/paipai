@@ -6,6 +6,7 @@ import akka.actor.{Actor, ActorLogging, ActorRef}
 import common.Tool._
 import common._
 import db._
+import tools.NetTool
 
 /**
   * Created by admin on 2/23/2017.
@@ -35,14 +36,33 @@ class LoanActor(user:ActorRef)  extends Actor with ActorLogging  {
   }
 //
   def canBid(loan:Loan,loanInfo: LoanInfo):Boolean={
-    //审核逾期信息
-    if(loanInfo.NormalCount < 0) return false
-    val List(count,yu,hei)=List(loanInfo.NormalCount,loanInfo.OverdueLessCount,loanInfo.OverdueMoreCount)
-    //没有成功还款过或者有过逾期的
-    if(count==0 || hei>0 || yu> 0) return false
-    if(loan.Funding<100){
-      true
-    }else false
+    //切换为AI模式
+    //清洗数据
+    val CreditCode=loan.CreditCode match {
+      case "A"=>1
+      case "B"=>2
+      case "C"=>3
+      case "D"=>4
+      case "E"=>5
+      case "F"=>6
+      case _=>0
+    }
+    //装载ai数据
+    val data=List(loanInfo.Gender,loanInfo.Age,loanInfo.SuccessCount,loanInfo.NormalCount,loanInfo.OverdueLessCount,
+      loanInfo.OverdueMoreCount,loanInfo.OwingPrincipal,loanInfo.OwingAmount,loanInfo.CertificateValidate,loanInfo.NciicIdentityCheck,
+      loanInfo.PhoneValidate,loanInfo.VideoValidate,loanInfo.CreditValidate,loanInfo.EducateValidate,loan.Amount,CreditCode,
+      loan.Months,loan.Rate).mkString(",")
+    NetTool.HttpPost(SDKMain.aiUrl,null,Map("data"->data))._2.toBigDecimal  > BigDecimal(0.8)
+
+//    传统模式
+//    //审核逾期信息
+//    if(loanInfo.NormalCount < 0) return false
+//    val List(count,yu,hei)=List(loanInfo.NormalCount,loanInfo.OverdueLessCount,loanInfo.OverdueMoreCount)
+//    //没有成功还款过或者有过逾期的
+//    if(count==0 || hei>0 || yu> 0) return false
+//    if(loan.Funding<100){
+//      true
+//    }else false
   }
 
 }
