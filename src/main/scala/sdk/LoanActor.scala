@@ -47,24 +47,24 @@ class LoanActor(user:ActorRef)  extends Actor with ActorLogging  {
       case "F"=>6
       case _=>0
     }
-    //装载ai数据
-    val data=List(loanInfo.Gender,loanInfo.Age,loanInfo.SuccessCount,loanInfo.NormalCount,loanInfo.OverdueLessCount,
-      loanInfo.OverdueMoreCount,loanInfo.OwingPrincipal,loanInfo.OwingAmount,loanInfo.CertificateValidate,loanInfo.NciicIdentityCheck,
-      loanInfo.PhoneValidate,loanInfo.VideoValidate,loanInfo.CreditValidate,loanInfo.EducateValidate,loan.Amount,CreditCode,
-      loan.Months,loan.Rate).mkString(",")
-    val point=NetTool.HttpPost(SDKMain.aiUrl,null,Map("data"->data))._2.toBigDecimal
-    println("ai:"+loan.ListingId+"="+point)
-    point > BigDecimal(0.9)
+//    //装载ai数据
+//    val data=List(loanInfo.Gender,loanInfo.Age,loanInfo.SuccessCount,loanInfo.NormalCount,loanInfo.OverdueLessCount,
+//      loanInfo.OverdueMoreCount,loanInfo.OwingPrincipal,loanInfo.OwingAmount,loanInfo.CertificateValidate,loanInfo.NciicIdentityCheck,
+//      loanInfo.PhoneValidate,loanInfo.VideoValidate,loanInfo.CreditValidate,loanInfo.EducateValidate,loan.Amount,CreditCode,
+//      loan.Months,loan.Rate).mkString(",")
+//    val point=NetTool.HttpPost(SDKMain.aiUrl,null,Map("data"->data))._2.toBigDecimal
+//    println("ai:"+loan.ListingId+"="+point)
+//    point > BigDecimal(0.9)
 
 //    传统模式
 //    //审核逾期信息
-//    if(loanInfo.NormalCount < 0) return false
-//    val List(count,yu,hei)=List(loanInfo.NormalCount,loanInfo.OverdueLessCount,loanInfo.OverdueMoreCount)
-//    //没有成功还款过或者有过逾期的
-//    if(count==0 || hei>0 || yu> 0) return false
-//    if(loan.Funding<100){
-//      true
-//    }else false
+    if(loanInfo.NormalCount < 0) return false
+    val List(count,yu,hei)=List(loanInfo.NormalCount,loanInfo.OverdueLessCount,loanInfo.OverdueMoreCount)
+    //没有成功还款过或者有过逾期的
+    if(count==0 || hei>0 || yu> 0) return false
+    if(loan.Funding<100){
+      true
+    }else false
   }
 
 }
