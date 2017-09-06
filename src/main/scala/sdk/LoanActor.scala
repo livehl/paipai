@@ -11,21 +11,21 @@ import tools.NetTool
 /**
   * Created by admin on 2/23/2017.
   */
-class LoanActor(user:ActorRef)  extends Actor with ActorLogging  {
+class LoanActor(user: ActorRef) extends Actor with ActorLogging {
   def receive = {
-    case loans:List[Loan] =>
+    case loans: List[Loan] =>
       safe {
-        println(new Date().sdatetime+" acting loans:"+loans.size +",id:"+loans.map(_.ListingId).mkString(","))
-        val dbLoans=if(loans.isEmpty) (0::Nil).toSet[Int] else  new Loan().query(s"ListingId in (${loans.map(_.ListingId).mkString(",")})").map(_.ListingId).toSet[Int]
-        val newLoans=loans.filter(_.Rate>=20).filter(v=> !dbLoans.contains(v.ListingId)).sortBy(_.Rate * -1)
-        val loanInfos=LoansApi.getLoanInfo(newLoans.map((_.ListingId)))
-        val loansMap=newLoans.map(v=> v.ListingId -> v).toMap
-        val canBidLoans=loanInfos.filter(v=>canBid(loansMap(v.ListingId),v))
-        user ! canBidLoans.map(v=>loansMap(v.ListingId))
-        DBEntity.transaction{
+        println(new Date().sdatetime + " acting loans:" + loans.size + ",id:" + loans.map(_.ListingId).mkString(","))
+        val dbLoans = if (loans.isEmpty) (0 :: Nil).toSet[Int] else new Loan().query(s"ListingId in (${loans.map(_.ListingId).mkString(",")})").map(_.ListingId).toSet[Int]
+        val newLoans = loans.filter(_.Rate >= 20).filter(v => !dbLoans.contains(v.ListingId)).sortBy(_.Rate * -1)
+        val loanInfos = LoansApi.getLoanInfo(newLoans.map((_.ListingId)))
+        val loansMap = newLoans.map(v => v.ListingId -> v).toMap
+        val canBidLoans = loanInfos.map(v => BidLoan(loansMap(v.ListingId), canBid(loansMap(v.ListingId), v))).filter(_.score > getSettingMap()("AiScore").toBigDecimal.doubleValue())
+        user ! canBidLoans
+        DBEntity.transaction {
           newLoans.foreach(_.insert())
           loanInfos.foreach(_.insert())
-        }{ex=>
+        } { ex =>
           ex.printStackTrace()
         }
       }
@@ -34,37 +34,38 @@ class LoanActor(user:ActorRef)  extends Actor with ActorLogging  {
     case a: Any =>
       sender ! new UnSupportExcepiton
   }
-//
-  def canBid(loan:Loan,loanInfo: LoanInfo):Boolean={
+
+  //
+  def canBid(loan: Loan, loanInfo: LoanInfo): Double = {
     //切换为AI模式
     //清洗数据
-    val CreditCode=loan.CreditCode match {
-      case "A"=>1
-      case "B"=>2
-      case "C"=>3
-      case "D"=>4
-      case "E"=>5
-      case "F"=>6
-      case _=>0
+    val CreditCode = loan.CreditCode match {
+      case "A" => 1
+      case "B" => 2
+      case "C" => 3
+      case "D" => 4
+      case "E" => 5
+      case "F" => 6
+      case _ => 0
     }
-//    //装载ai数据
-//    val data=List(loanInfo.Gender,loanInfo.Age,loanInfo.SuccessCount,loanInfo.NormalCount,loanInfo.OverdueLessCount,
-//      loanInfo.OverdueMoreCount,loanInfo.OwingPrincipal,loanInfo.OwingAmount,loanInfo.CertificateValidate,loanInfo.NciicIdentityCheck,
-//      loanInfo.PhoneValidate,loanInfo.VideoValidate,loanInfo.CreditValidate,loanInfo.EducateValidate,loan.Amount,CreditCode,
-//      loan.Months,loan.Rate).mkString(",")
-//    val point=NetTool.HttpPost(SDKMain.aiUrl,null,Map("data"->data))._2.toBigDecimal
-//    println("ai:"+loan.ListingId+"="+point)
-//    point > BigDecimal(0.9)
-
-//    传统模式
-//    //审核逾期信息
-    if(loanInfo.NormalCount < 0) return false
-    val List(count,yu,hei)=List(loanInfo.NormalCount,loanInfo.OverdueLessCount,loanInfo.OverdueMoreCount)
-    //没有成功还款过或者有过逾期的
-    if(count==0 || hei>0 || yu> 0) return false
-    if(loan.Funding<100){
-      true
-    }else false
+    //    //装载ai数据
+    val data = List(loanInfo.Gender, loanInfo.Age, loanInfo.SuccessCount, loanInfo.NormalCount, loanInfo.OverdueLessCount,
+      loanInfo.OverdueMoreCount, loanInfo.OwingPrincipal, loanInfo.OwingAmount, loanInfo.CertificateValidate, loanInfo.NciicIdentityCheck,
+      loanInfo.PhoneValidate, loanInfo.VideoValidate, loanInfo.CreditValidate, loanInfo.EducateValidate, loan.Amount, CreditCode,
+      loan.Months, loan.Rate).mkString(",")
+    val point = NetTool.HttpPost(getSettingMap()("aiurl"), null, Map("data" -> data))._2.toBigDecimal
+    println("ai:" + loan.ListingId + "=" + point)
+    //    point > BigDecimal(0.9)
+    point.doubleValue()
+    //    传统模式
+    //    //审核逾期信息
+    //    if(loanInfo.NormalCount < 0) return 0d
+    //    val List(count,yu,hei)=List(loanInfo.NormalCount,loanInfo.OverdueLessCount,loanInfo.OverdueMoreCount)
+    //    //没有成功还款过或者有过逾期的
+    //    if(count==0 || hei>0 || yu> 0) return 0d
+    //    if(loan.Funding<100){
+    //      1d
+    //    }else 0d
   }
 
 }

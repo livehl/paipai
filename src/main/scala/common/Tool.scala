@@ -25,7 +25,7 @@ import scala.util.Random
  * Created by 林 on 14-4-3.
  */
 object Tool {
-
+  private val settingCache = new mutable.HashMap[String, String]()
   private val chars: Array[Char] = "0123456789ABCDEF".toCharArray
   private val settingObjectCache = new util.Hashtable[String, AnyRef]()
   private val AES_DEFAULT_KEY = "#$#$#^T#$45rw3d4g$%^"
@@ -202,10 +202,10 @@ object Tool {
     }
   }
 
-  def getSettingMap(): Map[String, String] = {
-    //这里取数据有一秒缓存延迟
-    Cache.getCache(SETTING_VALUE_CACHE_KEY).get.asInstanceOf[Map[String, String]]
-  }
+//  def getSettingMap(): Map[String, String] = {
+//    //这里取数据有一秒缓存延迟
+//    Cache.getCache(SETTING_VALUE_CACHE_KEY).get.asInstanceOf[Map[String, String]]
+//  }
 
   def getSettingCacheObject[T](keys: String*)(f: Array[String] => T): T = {
     val setting = getSettingMap()
@@ -403,6 +403,15 @@ object Tool {
   }
   def File2Byte(file: File):Array[Byte]={
     Stream2Byte(new FileInputStream(file))
+  }
+
+  def getSettingMap(): Map[String, String] = {
+    settingCache.toMap[String, String]
+  }
+
+  def setSetting(data: Map[String, String]) = {
+    settingCache.clear()
+    data.foreach(v => settingCache.put(v._1, v._2))
   }
 
 }

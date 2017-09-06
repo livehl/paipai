@@ -168,6 +168,8 @@ class Bid(val id: Int = 0,
           val lid: Int = 0,
           @(ApiModelProperty@field)(value = "金额", required = true)
           val money: Int = 0,
+          @(ApiModelProperty@field)(value = "预测分值", required = true)
+          val score:Double=0d,
           @(ApiModelProperty@field)(value = "创建时间", required = true)
           val createTime: Date = new Date(System.currentTimeMillis())) extends BaseDBEntity[Bid]("Bid")
 
