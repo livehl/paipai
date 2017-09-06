@@ -21,7 +21,7 @@ class UserActor extends Actor with ActorLogging  {
     val ck = cacheMethodString("user_cookie_" + user.uid, 3600 * 24) {
       UserApi.login(user.userName.decrypt(), user.passWord.decrypt())
     }
-    val hasBid=if(user.couponCount>0) bidLoanCoupon(user.uid,50,loan,ck) else bidLoan(user.uid,50,loan,ck,score)
+    val hasBid=if(user.couponCount>0) bidLoanCoupon(user.uid,50,loan,ck,score) else bidLoan(user.uid,50,loan,ck,score)
     println(new Date().sdatetime+" "+loan.ListingId+" "+user.userName.decrypt()+":bid:50,"+hasBid)
     if(hasBid==0){ //动态修正金额
       users(user.id)=new UserAccount(user.id,user.uid,"ppd",user.userName,user.passWord,user.money - 50,user.allMoney,user.canBorrowMoney,
@@ -81,7 +81,7 @@ class UserActor extends Actor with ActorLogging  {
     }else 3
   }
 
-  def bidLoanCoupon(uid:Int,amount:Int,loan:Loan,cookie:CookieStore):Int={
+  def bidLoanCoupon(uid:Int,amount:Int,loan:Loan,cookie:CookieStore,score:Double):Int={
     val notBid=new Bid().query("uid=? and lid=?",uid,loan.ListingId).size == 0
     if(!notBid) return 1
     val funding =0// PaiPaiLoans.checkLoan(loan.ListingId)
@@ -110,7 +110,7 @@ class UserActor extends Actor with ActorLogging  {
         }
         4
       }else{
-        new Bid(0, uid, loan.ListingId, amount, new Date()).insert()
+        new Bid(0, uid, loan.ListingId, amount,score, new Date()).insert()
         Cache.delCache("user_coupon"+uid)
         0
       }
