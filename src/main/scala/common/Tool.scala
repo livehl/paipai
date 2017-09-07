@@ -8,7 +8,7 @@ import java.util.concurrent.Executors
 import java.util.zip.{GZIPInputStream, GZIPOutputStream}
 import java.util.{Date, TimeZone, UUID}
 
-import com.fasterxml.jackson.databind.{ObjectMapper, SerializationFeature}
+import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 import common.JedisCacheKeys._
@@ -32,6 +32,7 @@ object Tool {
   private val map = new ObjectMapper() with ScalaObjectMapper
   map.registerModule(DefaultScalaModule)
   map.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+  map.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
   map.setTimeZone(TimeZone.getTimeZone("GMT+8"))
   map.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"))
 

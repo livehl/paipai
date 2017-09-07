@@ -5,6 +5,7 @@ import common.{OtsCache, TimeTool}
 import common.Tool._
 import db._
 import org.apache.http.entity.ByteArrayEntity
+import sdk.UserApi
 import tools.{Image, NetTool}
 
 import scala.collection.mutable
@@ -19,10 +20,11 @@ object Test {
 
 
   def main(array: Array[String]): Unit = {
+    UserApi.getAllRetList
 
 //    runTasks
 
-    NetTool.HttpPost("http://ppdai.local/predict")
+//    println(NetTool.HttpPost("http://ppdai.sftui.com/predict", null, Map("data" -> "2,25,2,5,2,0,5779,7676,0,0,1,0,0,0,5776,3,6,20"))._2)
 
 //    println("1d".dateExp.sdatetime)
 //    println(new TaskLog().createTable())
@@ -48,7 +50,7 @@ object Test {
 //    }
 //    val List(count,yu,hei)=List("正常还清次数","逾期(0-15天)还清次数","逾期(15天以上)还清次数").map(v=>getExpNum(v).toInt)
 //    val l=new LoanData().queryById("683054")
-//    System.exit(0)
+    System.exit(0)
 //    OtsCache.setCache("nimei","你妹".getBytes)
 //    println(new String(OtsCache.getCache("nimei").get))
 //    val all=OtsCache.getAll

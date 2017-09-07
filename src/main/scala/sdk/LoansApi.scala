@@ -87,6 +87,19 @@ object LoansApi {
       }.flatten
     }else Nil
   }
+  def getLoanWithId(loans: List[Int])={
+    if(loans.size>0) {
+      loans.grouped(10).toList.map{ids=>
+        val result = OpenApiClient.send(gwurl + "/invest/LLoanInfoService/BatchListingInfos", new PropertyObject("ListingIds",ids.toList.asJava, ValueTypeEnum.Other))
+        if (result.isSucess) {
+          result.getContext.jsonToMap("LoanInfos").asInstanceOf[List[Map[String,Any]]].map{l=>
+            val jsonMap=l+("createTime"->new Date()) + ("Rate"-> l("CurrentRate"))
+            toBean(jsonMap.toJson,classOf[Loan])
+          }
+        } else Nil
+      }.flatten
+    }else Nil
+  }
   //批量获取标的状态
   def getLoanStatus(loans: List[Int])={
     if(loans.size>0) {
