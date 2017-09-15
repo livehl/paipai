@@ -116,7 +116,7 @@ object LoansApi {
 
   //检查并更新未完成的标的
   def checkLoans()={
-    val ids=DBEntity.queryMap(s"select ListingId from ${new Loan().tableName} where Funding < 100  and Rate >= 20 and createTime >'"+("-1d".dateExp.sdate)+"'  order by Funding desc  limit 1000").map(_("ListingId").asInstanceOf[Int])
+    val ids=DBEntity.queryMap(s"select ListingId from ${new Loan().tableName} where Funding < 100  and Rate >= 20 and createTime >'"+("-1d".dateExp.sdate)+"'  limit 1000").map(_("ListingId").asInstanceOf[Int])
     val loanStatus=getLoanStatus(ids.toList).filter(_._2==3)
     println(new Date().sdatetime+":"+loanStatus.size)
     val sqls=loanStatus.map{l=>
