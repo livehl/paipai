@@ -55,6 +55,17 @@ object UserApi {
     val htmlData=NetTool.HttpGet("http://m.invest.ppdai.com/user/UserProfitCenter",cookie)._2
     val html=Jsoup.parse(htmlData)
     val money=html.select(".account-balance .numble")
+    val allMoney=money.last().text().toBigDecimal
+    val account=Jsoup.parse(NetTool.HttpGet("http://invest.ppdai.com/account/userstatistics",cookie)._2).select(".my-ac-ps-yue").text().drop(1).replace(",","").toBigDecimal
+    val count=Jsoup.parse(NetTool.HttpGet("http://www.ppdai.com/account/coupon",cookie)._2).select(".tableStyleOne tr").asScala.filter(v=> !v.html().contains("借款") && !v.html().contains("没有优惠券")).size -1
+    new UserAccount(uid=uid,money=account,allMoney=allMoney,couponCount = count).update("uid","money","allMoney","couponCount")
+    (allMoney,account,count)
+  }
+
+  def updateUserAccountOld(uid:Int,cookie:CookieStore)={
+    val htmlData=NetTool.HttpGet("http://m.invest.ppdai.com/user/UserProfitCenter",cookie)._2
+    val html=Jsoup.parse(htmlData)
+    val money=html.select(".account-balance .numble")
     val (allMoney,account)=(money.last().text().toBigDecimal,money.first().text().toBigDecimal)
     val count=Jsoup.parse(NetTool.HttpGet("http://www.ppdai.com/account/coupon",cookie)._2).select(".tableStyleOne tr").asScala.filter(v=> !v.html().contains("借款")).size -1
     new UserAccount(uid=uid,money=account,allMoney=allMoney,couponCount = count).update("uid","money","allMoney","couponCount")
