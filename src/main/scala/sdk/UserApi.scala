@@ -95,14 +95,14 @@ object UserApi {
     * @return
     */
   def updateUserBorrowAccount(uid:Int,cookie:CookieStore)={
-    val html=LoansApi.loanLock.synchronized {
-      Jsoup.parse(NetTool.HttpGet("http://invest.ppdai.com/account/lend",cookie)._2)
-    }
-    val money=html.select(".my-ac-ctListall em").get(2)
-    val allBorrowMoney=money.text().drop(1).replace(",","").toBigDecimal
-    val canBorrowhtml=Jsoup.parse(NetTool.HttpGet("http://loan.ppdai.com/borrow/createlist/6",cookie)._2)
-    val canBorrowMoneyHtml=canBorrowhtml.select(".my-ac-balanceNum")
-    val canBorrowMoney=canBorrowMoneyHtml.text().replace(",","").toBigDecimal
+//    val html=LoansApi.loanLock.synchronized {
+//      Jsoup.parse(NetTool.HttpGet("http://invest.ppdai.com/account/lend",cookie)._2)
+//    }
+//    val money=html.select(".my-ac-ctListall em").get(2)
+//    val allBorrowMoney=money.text().drop(1).replace(",","").toBigDecimal
+//    val canBorrowhtml=Jsoup.parse(NetTool.HttpGet("http://loan.ppdai.com/borrow/createlist/6",cookie)._2)
+//    val canBorrowMoneyHtml=canBorrowhtml.select(".my-ac-balanceNum")
+//    val canBorrowMoney=canBorrowMoneyHtml.text().replace(",","").toBigDecimal
     val dayReturnHtml=Jsoup.parse(NetTool.HttpGet("http://loan.ppdai.com/account/repaymentlist",cookie)._2)
     //记录贷款业务
     val borrows=new Borrow().query("uid=?",uid).map(_.lid).toSet
@@ -131,8 +131,8 @@ object UserApi {
         }
       }
     }
-    new UserAccount(uid=uid,allBorrowMoney=allBorrowMoney,canBorrowMoney=canBorrowMoney,dayReturnMoney = dayReturnMoney).update("uid","allBorrowMoney","canBorrowMoney","dayReturnMoney")
-    (allBorrowMoney,canBorrowMoney,dayReturnMoney)
+    new UserAccount(uid=uid,dayReturnMoney = dayReturnMoney).update("uid","dayReturnMoney")
+    (BigDecimal(0),BigDecimal(0),dayReturnMoney)
   }
 
   /**
@@ -223,7 +223,7 @@ object UserApi {
   //获取指定用户的黑名单
   def getBackList(ck:CookieStore)={
     def getAllBackList(num:Int):List[String]= {
-      val page=Jsoup.parse(NetTool.HttpGet(s"http://invest.ppdai.com/account/blacklist?PageIndex=${num}&LateDayTo=10&LateDayFrom",ck)._2)
+      val page=Jsoup.parse(NetTool.HttpGet(s"http://invest.ppdai.com/account/blacklistnew?PageIndex=${num}&LateDayTo=10&IsCalendarRequest=0",ck)._2)
       val table = page.select("table").asScala
       val lines = table.map { tb =>
         tb.select("tr").asScala.map { tr =>
@@ -255,7 +255,7 @@ object UserApi {
   //获取指定用户的还清名单
   def getRetList(ck:CookieStore)={
     def getAllBackList(num:Int):List[String]= {
-      val page=Jsoup.parse(NetTool.HttpGet(s"http://invest.ppdai.com/account/paybacklend?pageIndex=${num}&Type=1",ck)._2)
+      val page=Jsoup.parse(NetTool.HttpGet(s"http://invest.ppdai.com/account/paybacklendnew?Type=2&pageIndex=${num}",ck)._2)
       val table = page.select(".my-paid-list").asScala
       val lines = table.map { tb =>
         tb.select("span").asScala.map { tr =>

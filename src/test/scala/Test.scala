@@ -20,7 +20,7 @@ object Test {
 
 
   def main(array: Array[String]): Unit = {
-    UserApi.updateUsers
+    UserApi.getAllBackList
     System.exit(0)
 //    runTasks
 
