@@ -62,6 +62,12 @@ object UserApi {
     (allMoney,account,count)
   }
 
+  /**
+    * 老版移动端检查
+    * @param uid
+    * @param cookie
+    * @return
+    */
   def updateUserAccountOld(uid:Int,cookie:CookieStore)={
     val htmlData=NetTool.HttpGet("http://m.invest.ppdai.com/user/UserProfitCenter",cookie)._2
     val html=Jsoup.parse(htmlData)
@@ -72,7 +78,7 @@ object UserApi {
     (allMoney,account,count)
   }
   /**
-    * 检查贷款账户资金
+    * 检查贷款账户资金(后期不再必要)
     */
   def checkBorrowUsers()={
     val users=new UserAccount().queryAll()
@@ -88,21 +94,13 @@ object UserApi {
   }
 
   /**
-    * 更新借款账户信息
+    * 更新借款账户信息(后期不再必要)
     *
     * @param uid
     * @param cookie
     * @return
     */
   def updateUserBorrowAccount(uid:Int,cookie:CookieStore)={
-//    val html=LoansApi.loanLock.synchronized {
-//      Jsoup.parse(NetTool.HttpGet("http://invest.ppdai.com/account/lend",cookie)._2)
-//    }
-//    val money=html.select(".my-ac-ctListall em").get(2)
-//    val allBorrowMoney=money.text().drop(1).replace(",","").toBigDecimal
-//    val canBorrowhtml=Jsoup.parse(NetTool.HttpGet("http://loan.ppdai.com/borrow/createlist/6",cookie)._2)
-//    val canBorrowMoneyHtml=canBorrowhtml.select(".my-ac-balanceNum")
-//    val canBorrowMoney=canBorrowMoneyHtml.text().replace(",","").toBigDecimal
     val dayReturnHtml=Jsoup.parse(NetTool.HttpGet("http://loan.ppdai.com/account/repaymentlist",cookie)._2)
     //记录贷款业务
     val borrows=new Borrow().query("uid=?",uid).map(_.lid).toSet
@@ -136,7 +134,7 @@ object UserApi {
   }
 
   /**
-    * 借款
+    * 借款(后期不再必要)
     *
     * @param uid
     * @param amount
@@ -172,6 +170,11 @@ object UserApi {
     "ok,"+users.size
   }
 
+  /**
+    * 领取蚊子肉
+    * @param cookie
+    * @return
+    */
   def getUserCoupon(cookie:CookieStore)={
     val ck=NetTool.HttpGet("https://m.invest.ppdai.com/Activity/Calendar?mType=Group",cookie)._1
     val ret=NetTool.HttpPost("https://m.invest.ppdai.com/Activity/InsertCalendar",ck)._2
